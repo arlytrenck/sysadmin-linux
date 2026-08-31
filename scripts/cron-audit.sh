@@ -64,7 +64,7 @@ fi
 echo
 echo "=== Per-user crontabs ==="
 if [[ -r /etc/passwd ]]; then
-  while IFS=: read -r user _ uid _ _ home shell; do
+  while IFS=: read -r user _ uid _ _ _ shell; do
     # Skip obvious system/service accounts with no login shell
     [[ "$shell" == */nologin || "$shell" == */false ]] && continue
     (( uid < 1000 && uid != 0 )) && continue
@@ -82,4 +82,3 @@ echo
 echo "Done. Review entries for anything unfamiliar, especially jobs that"
 echo "download-and-execute, run as root unnecessarily, or point at paths"
 echo "under /tmp or other world-writable locations."
-
