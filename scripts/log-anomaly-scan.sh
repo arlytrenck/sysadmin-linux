@@ -45,9 +45,10 @@ count_journald() {
 }
 
 count_flatfile() {
-    local logfile="$1" since_epoch="$2" until_epoch="$3"
+    local logfile="$1"
     # Best-effort: count lines containing common error markers within the
-    # file's tail; flat-file timestamp parsing is inherently approximate.
+    # file's tail; flat-file timestamp parsing is inherently approximate,
+    # so this doesn't try to slice by time window the way journald does.
     grep -Eic '\berror\b|\bfail(ed|ure)?\b|\bcrit(ical)?\b|\bpanic\b' "$logfile" 2>/dev/null
 }
 
@@ -65,11 +66,11 @@ if command -v journalctl >/dev/null 2>&1 && [[ -d /run/systemd/journal ]]; then
     baseline_count=$(count_journald "$baseline_since_iso" "$recent_since_iso")
 elif [[ -r /var/log/syslog ]]; then
     source="/var/log/syslog (approximate - no time-window slicing)"
-    recent_count=$(count_flatfile /var/log/syslog "$recent_since_epoch" "$now_epoch")
+    recent_count=$(count_flatfile /var/log/syslog)
     baseline_count=""
 elif [[ -r /var/log/messages ]]; then
     source="/var/log/messages (approximate - no time-window slicing)"
-    recent_count=$(count_flatfile /var/log/messages "$recent_since_epoch" "$now_epoch")
+    recent_count=$(count_flatfile /var/log/messages)
     baseline_count=""
 else
     echo "No usable log source found (no journald, /var/log/syslog, or /var/log/messages)."
