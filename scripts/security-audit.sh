@@ -71,7 +71,7 @@ else
   echo "  (skipped: /etc/sudoers not readable)"
 fi
 if [[ -d /etc/sudoers.d ]]; then
-  find /etc/sudoers.d -type f -exec sh -c 'echo "--- {} ---"; grep -vE "^\s*#|^\s*$" "{}"' \; 2>/dev/null
+  find /etc/sudoers.d -type f -exec sh -c 'echo "--- $1 ---"; grep -vE "^\s*#|^\s*$" "$1"' _ {} \; 2>/dev/null
 fi
 
 echo
@@ -86,4 +86,3 @@ fi
 
 echo
 echo "Done. Review findings above — this is a starting point, not a verdict."
-
