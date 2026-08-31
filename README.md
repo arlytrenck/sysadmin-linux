@@ -26,7 +26,10 @@ sysadmin-linux/
 │   ├── firewall-rules-dump.sh    # snapshot nftables/ufw/iptables rules
 │   ├── ssh-key-audit.sh          # audit authorized_keys for weak/shared keys
 │   ├── raid-smart-health-check.sh # mdadm + SMART disk health check
-│   └── process-watchdog.sh       # flag runaway CPU/mem and zombie processes
+│   ├── process-watchdog.sh       # flag runaway CPU/mem and zombie processes
+│   ├── pending-reboot-check.sh   # detect whether a reboot is waiting to apply
+│   ├── log-anomaly-scan.sh       # flag error-rate spikes vs. a trailing baseline
+│   └── docker-container-audit.sh # flag root/privileged/unbounded/restart-looping containers
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
@@ -37,7 +40,9 @@ sysadmin-linux/
     ├── backup-dr-testing-runbook.md
     ├── monitoring-alerting-guide.md
     ├── database-backup-restore-guide.md
-    └── capacity-planning-guide.md
+    ├── capacity-planning-guide.md
+    ├── container-security-guide.md
+    └── log-management-reference.md
 ```
 
 ## Usage
@@ -63,6 +68,9 @@ chmod +x scripts/*.sh
 - `nft`, `ufw`, or `iptables` (whichever is in use) for `firewall-rules-dump.sh`
 - `ssh-keygen` (openssh-client) for `ssh-key-audit.sh`
 - `mdadm` and/or `smartmontools` (smartctl) for `raid-smart-health-check.sh`
+- `journalctl` (systemd) recommended for `log-anomaly-scan.sh` and
+  `pending-reboot-check.sh`; both fall back to other sources if absent
+- `docker` for `docker-container-audit.sh` (skips cleanly if not installed)
 
 ## Contributing
 
