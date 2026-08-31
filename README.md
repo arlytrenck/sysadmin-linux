@@ -1,23 +1,33 @@
-# sysadmin
+# sysadmin-linux
 
 A collection of Linux server administration scripts, runbooks, and reference
 documentation, gathered from day-to-day homelab and small-fleet operations.
 
+A companion repo, [sysadmin-windows](https://github.com/arlytrenck/sysadmin-windows),
+covers the same ground for Windows Server environments.
+
 ## Layout
 
 ```
-sysadmin/
+sysadmin-linux/
 ├── scripts/
 │   ├── backup-rotate.sh          # tar-based backups with retention
 │   ├── user-mgmt.sh              # create/lock/remove users, SSH key setup
 │   ├── disk-usage-report.sh      # top disk consumers + threshold alerting
 │   ├── log-cleanup.sh            # prune/compress old logs
 │   ├── service-health-check.sh   # check & optionally restart systemd units
-│   └── update-and-patch.sh       # apt/dnf update wrapper with logging
+│   ├── update-and-patch.sh       # apt/dnf update wrapper with logging
+│   ├── network-diagnostics.sh    # interfaces, routing, DNS, reachability
+│   ├── security-audit.sh         # SUID/SGID, world-writable, sudoers, etc.
+│   ├── package-inventory.sh      # snapshot installed packages, diff baselines
+│   └── user-activity-report.sh   # logins, failed logins, recent sudo usage
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
-    └── troubleshooting-guide.md
+    ├── troubleshooting-guide.md
+    ├── ssh-hardening-reference.md
+    ├── systemd-cheatsheet.md
+    └── networking-cheatsheet.md
 ```
 
 ## Usage
@@ -36,8 +46,9 @@ chmod +x scripts/*.sh
 
 - Bash 4+
 - Standard GNU coreutils
-- `systemctl` for `service-health-check.sh`
-- `apt` or `dnf`/`yum` for `update-and-patch.sh` (auto-detected)
+- `systemctl`/`journalctl` for `service-health-check.sh`, `user-activity-report.sh`
+- `apt` or `dnf`/`yum`/`rpm` for `update-and-patch.sh` and `package-inventory.sh` (auto-detected)
+- `ip`/`ss`/`dig` (iproute2 + bind-utils/dnsutils) for `network-diagnostics.sh`
 
 ## License
 
