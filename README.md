@@ -42,7 +42,12 @@ sysadmin-linux/
     ├── database-backup-restore-guide.md
     ├── capacity-planning-guide.md
     ├── container-security-guide.md
-    └── log-management-reference.md
+    ├── log-management-reference.md
+    ├── incident-postmortem-template.md
+    ├── change-management-checklist.md
+    ├── disaster-recovery-plan-template.md
+    ├── troubleshooting-flowchart.md
+    └── glossary.md
 ```
 
 ## Usage
