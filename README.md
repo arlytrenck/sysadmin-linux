@@ -20,14 +20,19 @@ sysadmin-linux/
 │   ├── network-diagnostics.sh    # interfaces, routing, DNS, reachability
 │   ├── security-audit.sh         # SUID/SGID, world-writable, sudoers, etc.
 │   ├── package-inventory.sh      # snapshot installed packages, diff baselines
-│   └── user-activity-report.sh   # logins, failed logins, recent sudo usage
+│   ├── user-activity-report.sh   # logins, failed logins, recent sudo usage
+│   ├── cert-expiry-check.sh      # TLS cert expiry, live host or local file
+│   ├── cron-audit.sh             # enumerate cron/timers across the system
+│   └── firewall-rules-dump.sh    # snapshot nftables/ufw/iptables rules
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
     ├── troubleshooting-guide.md
     ├── ssh-hardening-reference.md
     ├── systemd-cheatsheet.md
-    └── networking-cheatsheet.md
+    ├── networking-cheatsheet.md
+    ├── backup-dr-testing-runbook.md
+    └── monitoring-alerting-guide.md
 ```
 
 ## Usage
@@ -49,7 +54,16 @@ chmod +x scripts/*.sh
 - `systemctl`/`journalctl` for `service-health-check.sh`, `user-activity-report.sh`
 - `apt` or `dnf`/`yum`/`rpm` for `update-and-patch.sh` and `package-inventory.sh` (auto-detected)
 - `ip`/`ss`/`dig` (iproute2 + bind-utils/dnsutils) for `network-diagnostics.sh`
+- `openssl` for `cert-expiry-check.sh`
+- `nft`, `ufw`, or `iptables` (whichever is in use) for `firewall-rules-dump.sh`
+
+## Contributing
+
+Bug reports, script/doc suggestions, and pull requests are welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the process and style guidelines.
+Pushes and PRs touching `scripts/**.sh` run through
+[ShellCheck](.github/workflows/shellcheck.yml) in CI.
 
 ## License
 
-MIT — use at your own risk, no warranty. See individual scripts for details.
+MIT — see [LICENSE](LICENSE). Use at your own risk, no warranty.
