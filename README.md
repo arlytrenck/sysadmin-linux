@@ -23,7 +23,10 @@ sysadmin-linux/
 │   ├── user-activity-report.sh   # logins, failed logins, recent sudo usage
 │   ├── cert-expiry-check.sh      # TLS cert expiry, live host or local file
 │   ├── cron-audit.sh             # enumerate cron/timers across the system
-│   └── firewall-rules-dump.sh    # snapshot nftables/ufw/iptables rules
+│   ├── firewall-rules-dump.sh    # snapshot nftables/ufw/iptables rules
+│   ├── ssh-key-audit.sh          # audit authorized_keys for weak/shared keys
+│   ├── raid-smart-health-check.sh # mdadm + SMART disk health check
+│   └── process-watchdog.sh       # flag runaway CPU/mem and zombie processes
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
@@ -32,7 +35,9 @@ sysadmin-linux/
     ├── systemd-cheatsheet.md
     ├── networking-cheatsheet.md
     ├── backup-dr-testing-runbook.md
-    └── monitoring-alerting-guide.md
+    ├── monitoring-alerting-guide.md
+    ├── database-backup-restore-guide.md
+    └── capacity-planning-guide.md
 ```
 
 ## Usage
@@ -56,6 +61,8 @@ chmod +x scripts/*.sh
 - `ip`/`ss`/`dig` (iproute2 + bind-utils/dnsutils) for `network-diagnostics.sh`
 - `openssl` for `cert-expiry-check.sh`
 - `nft`, `ufw`, or `iptables` (whichever is in use) for `firewall-rules-dump.sh`
+- `ssh-keygen` (openssh-client) for `ssh-key-audit.sh`
+- `mdadm` and/or `smartmontools` (smartctl) for `raid-smart-health-check.sh`
 
 ## Contributing
 
