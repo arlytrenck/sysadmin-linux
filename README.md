@@ -41,23 +41,38 @@ sysadmin-linux/
 │   ├── bind-mount-audit.sh      # flag risky host bind mounts (writable /etc, docker.sock, ...)
 │   ├── compose-image-updates.sh # registry check for newer digests than pinned/running images
 │   ├── acme-cert-report.sh      # certs managed by Caddy/certbot/acme.sh/Traefik + expiry
-│   └── nightly-git-mirror.sh    # add -A / commit-if-drift / push, for cron; non-fatal
+│   ├── nightly-git-mirror.sh    # add -A / commit-if-drift / push, for cron; non-fatal
+│   ├── backup-verify.sh         # assert backups exist, are recent, pass an integrity check
+│   └── system-snapshot.sh       # redacted tarball of an /etc subset + system inventory
 └── docs/
-    ├── server-hardening-checklist.md
-    ├── incident-response-runbook.md
-    ├── troubleshooting-guide.md
-    ├── ssh-hardening-reference.md
-    ├── systemd-cheatsheet.md
-    ├── networking-cheatsheet.md
-    ├── backup-dr-testing-runbook.md
-    ├── monitoring-alerting-guide.md
-    ├── database-backup-restore-guide.md
-    ├── capacity-planning-guide.md
-    ├── container-security-guide.md
+    # cheatsheets & references
+    ├── linux-cheatsheet.md              # processes, files, permissions, journald, disks
+    ├── networking-cheatsheet.md         # ip/ss/dig/tcpdump/nftables + subnet quick-ref
+    ├── systemd-cheatsheet.md            # units, drop-ins, timers, resource control, sandboxing
+    ├── ssh-cheatsheet.md                # keys, agent, config, tunnels, transfer, debugging
+    ├── ssh-hardening-reference.md       # sshd_config baseline, with reasoning
+    ├── tls-cheatsheet.md                # inspecting certs, openssl s_client, ACME concepts
+    ├── git-cheatsheet.md                # reflog/bisect recovery, history search, config repos
+    ├── zfs-cheatsheet.md                # pools, datasets, snapshots, scrub, send/recv, ARC
+    ├── docker-compose-hardening-cheatsheet.md  # hardened compose YAML patterns
+    ├── container-security-guide.md      # the principles behind the compose patterns
     ├── log-management-reference.md
-    ├── incident-postmortem-template.md
+    ├── monitoring-alerting-guide.md
+    ├── capacity-planning-guide.md
+    ├── database-backup-restore-guide.md
+    # checklists
+    ├── new-server-bootstrap-checklist.md  # day-0 procedure for a fresh box
+    ├── server-hardening-checklist.md
     ├── change-management-checklist.md
-    ├── disaster-recovery-plan-template.md
+    # runbooks
+    ├── incident-response-runbook.md
+    ├── backup-3-2-1-runbook.md          # a backup design that actually restores
+    ├── backup-dr-testing-runbook.md     # exercising those backups on a schedule
+    ├── hypervisor-major-upgrade-runbook.md
+    ├── nas-hardening-audit-runbook.md
+    ├── reverse-proxy-sso-runbook.md
+    # troubleshooting & templates
+    ├── troubleshooting-guide.md
     ├── troubleshooting-flowchart.md
     ├── container-host-tuning.md
     ├── config-as-code-repo-hygiene.md
@@ -66,6 +81,8 @@ sysadmin-linux/
     ├── reverse-proxy-and-tls.md
     ├── mesh-vpn-remote-access.md
     ├── config-snapshots.md
+    ├── incident-postmortem-template.md
+    ├── disaster-recovery-plan-template.md
     └── glossary.md
 ```
 
@@ -102,6 +119,8 @@ chmod +x scripts/*.sh
 - `skopeo`, `crane`, or `docker buildx` for `compose-image-updates.sh`
 - `openssl` (already listed) for `acme-cert-report.sh`; `jq` for its Traefik acme.json path
 - `git` with working push auth for `nightly-git-mirror.sh`
+- `tar`, `gzip`, `sha256sum` for `backup-verify.sh` and `system-snapshot.sh`;
+  `zstd` and `age` are used by `backup-verify.sh` only if the archives need them
 
 ## Contributing
 

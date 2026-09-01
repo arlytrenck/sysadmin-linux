@@ -101,3 +101,57 @@ systemd-analyze blame                # slowest units to start
 systemd-analyze critical-chain       # the critical path that determined boot time
 ```
 
+## Editing units the right way
+
+Never edit files in `/lib/systemd/system` or `/usr/lib/systemd/system` — they
+get overwritten on package upgrade. Use a drop-in:
+
+```bash
+systemctl edit foo         # creates /etc/systemd/system/foo.service.d/override.conf
+systemctl daemon-reload
+systemctl restart foo
+```
+
+Full replacement (rare): `systemctl edit --full foo`. A drop-in only needs the
+keys you change. To clear a list-valued key inherited from the vendor unit, set
+it empty first:
+
+```ini
+[Service]
+ExecStart=
+ExecStart=/usr/bin/foo --new-flags
+```
+
+## Resource control (cgroups v2)
+
+Put limits in a drop-in or the unit — this caps the *service*, so a leak
+OOM-kills the unit instead of the host:
+
+```ini
+[Service]
+MemoryMax=2G            # hard cap
+MemoryHigh=1500M        # soft pressure (throttle before the cap)
+CPUQuota=200%           # = 2 cores
+TasksMax=4096
+IOWeight=50
+```
+
+Inspect live: `systemctl status foo` shows the cgroup; `systemd-cgtop` ranks
+units by resource use. Test an `OnCalendar=` expression with
+`systemd-analyze calendar 'Mon *-*-1..7 02:00'`.
+
+## Sandboxing a service (defense in depth)
+
+```ini
+[Service]
+NoNewPrivileges=true
+ProtectSystem=strict           # most of the filesystem read-only
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/foo    # carve back only what the service must write
+CapabilityBoundingSet=         # drop all capabilities; add back only what's needed
+SystemCallFilter=@system-service
+```
+
+`systemd-analyze security foo` scores a unit's exposure and shows which of these
+knobs are unset.
