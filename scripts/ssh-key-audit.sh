@@ -27,7 +27,7 @@ echo "=== SSH authorized_keys audit ==="
 
 while IFS=: read -r user _ uid _ _ home shell; do
   [ "$uid" -lt 1000 ] && [ "$uid" -ne 0 ] && continue
-  [ "$shell" = "/usr/sbin/nologin" ] || [ "$shell" = "/bin/false" ] && continue
+  case "$shell" in */nologin|*/false|"") continue ;; esac
 
   akfile="$home/.ssh/authorized_keys"
   [ -f "$akfile" ] || continue

@@ -2,10 +2,10 @@
 #
 # process-watchdog.sh — flag runaway (high CPU/mem) and zombie processes.
 #
-# Read-only by default; with -k it will send SIGTERM to zombie parents'
-# reap trigger is not attempted (zombies can't be killed directly — only
-# reaped by their parent), but runaway processes above threshold can
-# optionally be signaled with -k.
+# Read-only by default. Zombie processes are only reported, never signaled
+# (a zombie is already dead — it can't be killed, only reaped by its
+# parent). Runaway processes above the CPU/mem thresholds can optionally
+# be sent SIGTERM with -k.
 #
 # Usage: ./process-watchdog.sh [-c cpu_pct] [-m mem_pct] [-k]
 #   -c   CPU% threshold to flag a process (default: 90)
