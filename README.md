@@ -29,7 +29,11 @@ sysadmin-linux/
 │   ├── process-watchdog.sh       # flag runaway CPU/mem and zombie processes
 │   ├── pending-reboot-check.sh   # detect whether a reboot is waiting to apply
 │   ├── log-anomaly-scan.sh       # flag error-rate spikes vs. a trailing baseline
-│   └── docker-container-audit.sh # flag root/privileged/unbounded/restart-looping containers
+│   ├── docker-container-audit.sh # flag root/privileged/unbounded/restart-looping containers
+│   ├── compose-validate.sh      # docker compose config on every stack under a dir
+│   ├── compose-env-example.sh   # generate/verify .env.example from compose ${VAR} refs
+│   ├── grafana-dashboard-export.sh # Grafana dashboards/datasources/alerting -> redacted JSON
+│   └── tailscale-export.sh      # Tailscale node + tailnet config -> redacted JSON
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
@@ -47,6 +51,8 @@ sysadmin-linux/
     ├── change-management-checklist.md
     ├── disaster-recovery-plan-template.md
     ├── troubleshooting-flowchart.md
+    ├── container-host-tuning.md
+    ├── config-as-code-repo-hygiene.md
     └── glossary.md
 ```
 
@@ -75,7 +81,9 @@ chmod +x scripts/*.sh
 - `mdadm` and/or `smartmontools` (smartctl) for `raid-smart-health-check.sh`
 - `journalctl` (systemd) recommended for `log-anomaly-scan.sh` and
   `pending-reboot-check.sh`; both fall back to other sources if absent
-- `docker` for `docker-container-audit.sh` (skips cleanly if not installed)
+- `docker` for `docker-container-audit.sh` and `compose-validate.sh` (both skip cleanly if absent)
+- `jq` for `grafana-dashboard-export.sh`; `curl` for it and `tailscale-export.sh --api`
+- `tailscale` (CLI) for `tailscale-export.sh`
 
 ## Contributing
 
