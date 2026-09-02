@@ -33,7 +33,15 @@ sysadmin-linux/
 │   ├── compose-validate.sh      # docker compose config on every stack under a dir
 │   ├── compose-env-example.sh   # generate/verify .env.example from compose ${VAR} refs
 │   ├── grafana-dashboard-export.sh # Grafana dashboards/datasources/alerting -> redacted JSON
-│   └── tailscale-export.sh      # Tailscale node + tailnet config -> redacted JSON
+│   ├── tailscale-export.sh      # Tailscale node + tailnet config -> redacted JSON
+│   ├── age-backup.sh            # tar+gzip -> age-encrypt -> rotate -> checksum (off-host copy)
+│   ├── stack-db-dump.sh         # dump every DB container across a set of compose stacks
+│   ├── compose-drift.sh         # running containers vs. what compose declares; flag ad-hoc
+│   ├── healthcheck-audit.sh     # containers with no HEALTHCHECK / unhealthy / restart-looping
+│   ├── bind-mount-audit.sh      # flag risky host bind mounts (writable /etc, docker.sock, ...)
+│   ├── compose-image-updates.sh # registry check for newer digests than pinned/running images
+│   ├── acme-cert-report.sh      # certs managed by Caddy/certbot/acme.sh/Traefik + expiry
+│   └── nightly-git-mirror.sh    # add -A / commit-if-drift / push, for cron; non-fatal
 └── docs/
     ├── server-hardening-checklist.md
     ├── incident-response-runbook.md
@@ -53,6 +61,11 @@ sysadmin-linux/
     ├── troubleshooting-flowchart.md
     ├── container-host-tuning.md
     ├── config-as-code-repo-hygiene.md
+    ├── single-node-homelab-reliability.md
+    ├── backup-restore-drill.md
+    ├── reverse-proxy-and-tls.md
+    ├── mesh-vpn-remote-access.md
+    ├── config-snapshots.md
     └── glossary.md
 ```
 
@@ -84,6 +97,11 @@ chmod +x scripts/*.sh
 - `docker` for `docker-container-audit.sh` and `compose-validate.sh` (both skip cleanly if absent)
 - `jq` for `grafana-dashboard-export.sh`; `curl` for it and `tailscale-export.sh --api`
 - `tailscale` (CLI) for `tailscale-export.sh`
+- `age` for `age-backup.sh` (it refuses to run without it — no plaintext fallback)
+- `docker` (v2 compose) + `jq` for `compose-drift.sh` and `stack-db-dump.sh`
+- `skopeo`, `crane`, or `docker buildx` for `compose-image-updates.sh`
+- `openssl` (already listed) for `acme-cert-report.sh`; `jq` for its Traefik acme.json path
+- `git` with working push auth for `nightly-git-mirror.sh`
 
 ## Contributing
 
