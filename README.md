@@ -1,5 +1,8 @@
 # sysadmin-linux
 
+[![ShellCheck](https://github.com/arlytrenck/sysadmin-linux/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/arlytrenck/sysadmin-linux/actions/workflows/shellcheck.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A collection of Linux server administration scripts, runbooks, and reference
 documentation, gathered from day-to-day homelab and small-fleet operations.
 
