@@ -43,7 +43,10 @@ sysadmin-linux/
 │   ├── acme-cert-report.sh      # certs managed by Caddy/certbot/acme.sh/Traefik + expiry
 │   ├── nightly-git-mirror.sh    # add -A / commit-if-drift / push, for cron; non-fatal
 │   ├── backup-verify.sh         # assert backups exist, are recent, pass an integrity check
-│   └── system-snapshot.sh       # redacted tarball of an /etc subset + system inventory
+│   ├── system-snapshot.sh       # redacted tarball of an /etc subset + system inventory
+│   ├── listening-ports-audit.sh # every listening TCP/UDP socket, flag vs. an allowlist
+│   ├── swap-memory-pressure-check.sh # mem/swap thresholds, PSI stalls, recent OOM kills
+│   └── time-sync-check.sh       # chrony/timesyncd/ntpd sync status + offset threshold
 └── docs/
     # cheatsheets & references
     ├── linux-cheatsheet.md              # processes, files, permissions, journald, disks
