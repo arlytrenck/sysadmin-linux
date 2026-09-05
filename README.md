@@ -57,6 +57,9 @@ sysadmin-linux/
     ├── tls-cheatsheet.md                # inspecting certs, openssl s_client, ACME concepts
     ├── git-cheatsheet.md                # reflog/bisect recovery, history search, config repos
     ├── zfs-cheatsheet.md                # pools, datasets, snapshots, scrub, send/recv, ARC
+    ├── lvm-disk-partitioning-cheatsheet.md  # parted/fdisk, mkfs, LVM, mounting, swap
+    ├── text-processing-cheatsheet.md    # grep/sed/awk/jq, sort/uniq/cut, one-liners
+    ├── database-cli-cheatsheet.md       # psql/mysql/redis-cli/sqlite3 day-to-day commands
     ├── docker-compose-hardening-cheatsheet.md  # hardened compose YAML patterns
     ├── container-security-guide.md      # the principles behind the compose patterns
     ├── log-management-reference.md
