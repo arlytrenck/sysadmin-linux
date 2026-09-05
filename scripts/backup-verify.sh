@@ -20,6 +20,7 @@ esac; done
 [ -d "$DIR" ] || { echo "not a directory: $DIR"; exit 2; }
 
 shopt -s nullglob
+# shellcheck disable=SC2206 # GLOB is meant to expand; nullglob makes it safe
 files=( "$DIR"/$GLOB )
 [ "${#files[@]}" -gt 0 ] || { echo "FAIL: no files matching '$GLOB' in $DIR"; exit 1; }
 
@@ -42,7 +43,7 @@ check_one(){
     *.age)      head -c 20 "$f" | grep -q 'age-encryption' || { echo "FAIL: not an age file? $f"; return 1; } ;;
   esac
 }
-for f in "$newest"; do check_one "$f" || rc=1; done
+check_one "$newest" || rc=1
 
 [ "$rc" -eq 0 ] && echo "OK" || echo "PROBLEMS FOUND"
 exit $rc
