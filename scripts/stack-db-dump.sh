@@ -5,12 +5,10 @@
 #   MariaDB, SQLite (via a file copy), and Redis (BGSAVE + RDB copy).
 #
 # Usage:
-#   ./stack-db-dump.sh -o DIR [-d COMPOSE_DIR] [-p PROJECT] [-n]
+#   ./stack-db-dump.sh -o DIR [-p PROJECT] [-n]
 #
 # Options:
 #   -o DIR    Output directory for the dumps (required).
-#   -d DIR    Directory whose subdirectories hold compose stacks. Default: the
-#             current directory. Ignored if -p is given.
 #   -p NAME   Only dump containers belonging to this compose project.
 #   -n        Dry run: list what would be dumped, don't dump.
 #   -h        Show this help.
@@ -25,13 +23,12 @@
 
 set -uo pipefail
 
-OUT="" ; CDIR="." ; PROJECT="" ; DRY=0
+OUT="" ; PROJECT="" ; DRY=0
 usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
-while getopts ":o:d:p:nh" opt; do
+while getopts ":o:p:nh" opt; do
   case "$opt" in
     o) OUT="$OPTARG" ;;
-    d) CDIR="$OPTARG" ;;
     p) PROJECT="$OPTARG" ;;
     n) DRY=1 ;;
     h) usage 0 ;;
