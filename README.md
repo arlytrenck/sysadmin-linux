@@ -54,7 +54,11 @@ sysadmin-linux/
     # cheatsheets & references
     ├── linux-cheatsheet.md              # processes, files, permissions, journald, disks
     ├── networking-cheatsheet.md         # ip/ss/dig/tcpdump/nftables + subnet quick-ref
+    ├── dns-cheatsheet.md                # dig/resolvectl, record types, resolver stack, split-horizon
+    ├── firewall-cheatsheet.md           # nftables/ufw/firewalld, iptables view, the Docker bypass
     ├── systemd-cheatsheet.md            # units, drop-ins, timers, resource control, sandboxing
+    ├── cron-and-timers-cheatsheet.md    # crontab syntax + traps, systemd timers, lost-crontab recovery
+    ├── rsync-cheatsheet.md              # flags that matter, --delete safety, CIFS mtime trap, --link-dest
     ├── ssh-cheatsheet.md                # keys, agent, config, tunnels, transfer, debugging
     ├── ssh-hardening-reference.md       # sshd_config baseline, with reasoning
     ├── tls-cheatsheet.md                # inspecting certs, openssl s_client, ACME concepts
@@ -75,6 +79,8 @@ sysadmin-linux/
     ├── change-management-checklist.md
     # runbooks
     ├── incident-response-runbook.md
+    ├── disk-full-emergency-runbook.md   # filesystem at 100% — stop the bleeding, then prevent it
+    ├── secret-rotation-runbook.md       # rotate a token/password/key with overlap + rollback
     ├── backup-3-2-1-runbook.md          # a backup design that actually restores
     ├── backup-dr-testing-runbook.md     # exercising those backups on a schedule
     ├── hypervisor-major-upgrade-runbook.md
