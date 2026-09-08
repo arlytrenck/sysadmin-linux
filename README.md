@@ -105,7 +105,7 @@ sysadmin-linux/
 
 Each script is self-contained, POSIX-ish bash, and documents its own options
 via `-h`/`--help`. Review the source before running anything against a
-production host — these are starting points, not turnkey solutions, and you
+production host. These are starting points, not turnkey solutions, and you
 should adapt paths, thresholds, and package managers to your environment.
 
 ```bash
@@ -129,7 +129,7 @@ chmod +x scripts/*.sh
 - `docker` for `docker-container-audit.sh` and `compose-validate.sh` (both skip cleanly if absent)
 - `jq` for `grafana-dashboard-export.sh`; `curl` for it and `tailscale-export.sh --api`
 - `tailscale` (CLI) for `tailscale-export.sh`
-- `age` for `age-backup.sh` (it refuses to run without it — no plaintext fallback)
+- `age` for `age-backup.sh` (it refuses to run without it, no plaintext fallback)
 - `docker` (v2 compose) + `jq` for `compose-drift.sh` and `stack-db-dump.sh`
 - `skopeo`, `crane`, or `docker buildx` for `compose-image-updates.sh`
 - `openssl` (already listed) for `acme-cert-report.sh`; `jq` for its Traefik acme.json path
@@ -139,11 +139,11 @@ chmod +x scripts/*.sh
 
 ## Contributing
 
-Bug reports, script/doc suggestions, and pull requests are welcome — see
+Bug reports, script/doc suggestions, and pull requests are welcome. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the process and style guidelines.
 Pushes and PRs touching `scripts/**.sh` run through
 [ShellCheck](.github/workflows/shellcheck.yml) in CI.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Use at your own risk, no warranty.
+MIT. See [LICENSE](LICENSE). Use at your own risk, no warranty.

@@ -10,7 +10,7 @@ kill -TERM <pid>; kill -KILL <pid>   # ask nicely, then don't
 pkill -f 'pattern'           # by command line
 nice -n 19 cmd ; renice 19 -p <pid>  # deprioritise batch work
 ```
-`load` counts running **and** uninterruptible (D-state, usually I/O) tasks — a
+`load` counts running **and** uninterruptible (D-state, usually I/O) tasks, a
 high load with low CPU% means you're I/O-bound, not CPU-bound.
 
 ## Files & space
