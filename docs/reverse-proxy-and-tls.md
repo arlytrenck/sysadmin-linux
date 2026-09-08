@@ -18,12 +18,12 @@ you pick, report on what it's actually managing with
 
 ## ACME challenge: HTTP-01 vs DNS-01
 
-- **HTTP-01** — the CA hits `http://name/.well-known/acme-challenge/...`.
+- **HTTP-01**: the CA hits `http://name/.well-known/acme-challenge/...`.
   Needs port 80 reachable from the internet. Fine for genuinely public names.
-- **DNS-01** — you prove control by writing a TXT record. Works for names that
+- **DNS-01**: you prove control by writing a TXT record. Works for names that
   **never** point at a public IP (LAN-only services), and is the only way to
   get a **wildcard** (`*.example.com`). Needs an API token scoped to *DNS
-  edit* for that one zone — nothing more.
+  edit* for that one zone. Nothing more.
 
 For a homelab, DNS-01 with a wildcard is usually the move: one cert covers
 every subdomain, and services that only listen on the LAN still get real
@@ -60,7 +60,7 @@ grafana.example.com {
 
 If `app.example.com` has a public A record, LAN clients will hairpin out to
 your WAN IP and back. Avoid it by resolving `*.example.com` to the proxy's LAN
-IP **on the LAN** — a local DNS override on your resolver (Pi-hole, Unbound,
+IP **on the LAN**: a local DNS override on your resolver (Pi-hole, Unbound,
 your router, or the reverse proxy's own DNS). External DNS stays as-is (or
 absent, for LAN-only names).
 
@@ -95,7 +95,7 @@ header {
 }
 ```
 
-Add a `Content-Security-Policy` per app once you know what it loads — start in
+Add a `Content-Security-Policy` per app once you know what it loads. Start in
 report-only mode.
 
 ## Renewal safety net

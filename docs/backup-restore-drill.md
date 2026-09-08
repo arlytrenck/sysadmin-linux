@@ -11,7 +11,7 @@ broader DR test), [database-backup-restore-guide.md](database-backup-restore-gui
 
 - Restore into a **scratch location**, never over live data.
 - Have the decryption key / passphrase on hand and confirm you can read it.
-- Note the time — measuring how long a restore takes is half the point.
+- Note the time: measuring how long a restore takes is half the point.
 
 ## 1. Inventory what's actually protected
 
@@ -42,7 +42,7 @@ age -d -i ~/keys/age-identity.txt backups/postgres-latest.sql.gz.age | zcat | he
 ```
 
 If a `.age` file won't decrypt with the key you have, the backup is already
-worthless — fix that first.
+worthless: fix that first.
 
 ## 3. Restore a database
 
@@ -76,7 +76,7 @@ diff -qr /tmp/restore/app/<subset> /live/path/<subset> | head    # spot differen
 | | | | | | | |
 
 If the restore failed, the copy was stale, or the RPO (how much data you'd
-lose) is worse than you assumed — that's a finding. Fix it and re-run this
+lose) is worse than you assumed. That's a finding. Fix it and re-run this
 section, don't wait for next quarter.
 
 ## 6. Full-box dry run (annually)

@@ -1,7 +1,7 @@
 # Database CLI Cheatsheet
 
 Day-to-day `psql`/`mysql`/`redis-cli` commands for poking at a running
-database — connecting, looking around, and running one-off queries. For
+database: connecting, looking around, and running one-off queries. For
 the backup/restore workflow itself, see
 [database-backup-restore-guide.md](database-backup-restore-guide.md) and
 [stack-db-dump.sh](../scripts/stack-db-dump.sh). Most databases in a
@@ -21,7 +21,7 @@ redis-cli -h localhost -p 6379
 docker exec -it <container> redis-cli
 ```
 Passing `-p`/a password on the command line puts it in shell history and
-`ps` output — prefer a `.pgpass`/`.my.cnf` file, an env var the client
+`ps` output. Prefer a `.pgpass`/`.my.cnf` file, an env var the client
 reads itself (`MYSQL_PWD`, `PGPASSWORD`), or an interactive prompt.
 
 ## PostgreSQL (psql)
@@ -71,7 +71,7 @@ redis-cli CONFIG GET maxmemory     # check a config value
 redis-cli SAVE                     # force an RDB snapshot now
 ```
 `KEYS` scans the entire keyspace and blocks the single-threaded server
-while it runs — fine on a small dev instance, a real problem on anything
+while it runs: fine on a small dev instance, a real problem on anything
 with meaningful traffic. Use `--scan` instead once the dataset is
 non-trivial.
 
@@ -84,18 +84,18 @@ sqlite3 app.db "SELECT * FROM users LIMIT 5;"  # ad-hoc query
 sqlite3 app.db ".backup /tmp/app-backup.db"    # safe online backup (vs. copying the file)
 ```
 Copying a SQLite file while the application is writing to it can grab a
-torn/inconsistent snapshot — `.backup` (or the `VACUUM INTO` SQL command)
+torn/inconsistent snapshot: `.backup` (or the `VACUUM INTO` SQL command)
 takes a consistent copy through SQLite's own API instead.
 
 ## Notes
 
 - Read replicas/standbys aside, running an unbounded `SELECT` or `KEYS`
   against production during business hours is how a "just checking
-  something" session becomes an incident — reach for `LIMIT`, `--scan`,
+  something" session becomes an incident: reach for `LIMIT`, `--scan`,
   or a replica first.
 - `\timing` (psql) / query profiling in general is worth turning on before
-  investigating "this is slow" reports — confirm the specific query is
+  investigating "this is slow" reports. Confirm the specific query is
   actually the slow part before optimizing anything.
 - Container database credentials in this homelab are read from the
-  container's own environment rather than passed on a command line — see
+  container's own environment rather than passed on a command line. See
   [stack-db-dump.sh](../scripts/stack-db-dump.sh) for the pattern.

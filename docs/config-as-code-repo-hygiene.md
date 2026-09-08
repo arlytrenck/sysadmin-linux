@@ -1,7 +1,7 @@
 # Config-as-Code Repo Hygiene
 
 Keeping server config, Compose stacks, or IaC in git is worth doing, but a
-config repo leaks secrets more easily than an application repo — one careless
+config repo leaks secrets more easily than an application repo. One careless
 `git add -A` and an API token is in the history forever. This is a practical
 checklist for keeping one clean.
 
@@ -79,7 +79,7 @@ Broken YAML or a missing service reference should fail in CI, not on the host.
 ./compose-validate.sh -d .      # docker compose config on every stack
 ```
 
-`docker compose config` only *warns* on unset `${VAR}` (expected — real values
+`docker compose config` only *warns* on unset `${VAR}` (expected: real values
 aren't in the repo), so it's safe to run without the secrets present.
 
 ## Redact captured state
@@ -88,7 +88,7 @@ If the repo also stores *snapshots* of live config (firewall rules, DNS zones,
 dashboards, `tailscale` state), pipe every export through a redactor before it
 lands. A conservative pattern: replace the value of any JSON/YAML key whose
 name matches `/(?i)(key|secret|token|password|auth)/`, plus anything that
-looks like a private key block or a known token prefix. Over-redact — a
+looks like a private key block or a known token prefix. Over-redact. A
 snapshot rarely needs the actual secret to be useful for diffing.
 See [grafana-dashboard-export.sh](../scripts/grafana-dashboard-export.sh) and
 [tailscale-export.sh](../scripts/tailscale-export.sh) for worked examples.
@@ -111,7 +111,7 @@ jobs:
 
 ## If a secret does get committed
 
-1. **Rotate it first.** It's public the moment it's pushed — treat it as burned.
+1. **Rotate it first.** It's public the moment it's pushed. Treat it as burned.
 2. Then scrub history (`git filter-repo --replace-text`, or a fresh `git init`
    for a small repo) and force-push.
 3. Add a `.gitleaks.toml` rule or `.gitignore` entry so it can't recur.

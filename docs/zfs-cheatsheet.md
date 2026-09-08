@@ -8,7 +8,7 @@ zpool import               # list importable pools ; zpool import <name>
 zpool history <pool>       # every admin action ever taken
 zpool iostat -v 2          # live per-vdev I/O
 ```
-Keep pools under ~80–85% full — allocation gets slow and fragmented past that.
+Keep pools under ~80-85% full: allocation gets slow and fragmented past that.
 
 ## Redundancy reality check
 - `RAID0` / a pool of single-disk vdevs = **no** redundancy; one disk lost = pool
@@ -17,7 +17,7 @@ Keep pools under ~80–85% full — allocation gets slow and fragmented past tha
 - raidz1/2/3 = survive 1/2/3 losses per raidz vdev, slower resilver, no vdev
   expansion on older ZFS.
 A backup on a no-redundancy array still needs its own monitoring and a plan for
-"the array died" — the copy is not the safety net if losing it is silent.
+"the array died". The copy is not the safety net if losing it is silent.
 
 ## Datasets
 ```bash
@@ -72,6 +72,6 @@ zpool status                       # watch resilver; don't reboot mid-resilver
 Use `/dev/disk/by-id/` (stable) names when creating pools, never `/dev/sdX`.
 
 ## Feature flags / upgrades
-`zpool upgrade` is one-way and can block importing the pool on an older kernel —
-leave it until the new OS has been stable for a while and you no longer need the
+`zpool upgrade` is one-way and can block importing the pool on an older kernel.
+Leave it until the new OS has been stable for a while and you no longer need the
 rollback path.

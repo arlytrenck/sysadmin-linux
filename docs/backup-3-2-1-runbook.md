@@ -1,6 +1,6 @@
 # A backup design that actually restores
 
-Target: **3** copies, **2** media/locations, **1** off-site — and every layer
+Target: **3** copies, **2** media/locations, **1** off-site, and every layer
 tested by an actual restore, not by hoping.
 
 ## Layers
@@ -8,7 +8,7 @@ tested by an actual restore, not by hoping.
 | Layer | What | How |
 |---|---|---|
 | App-consistent data | DB dumps, not raw files | `pg_dumpall`, `mysqldump`, `sqlite3 .backup`, app export APIs |
-| Config | `/etc` subset, compose files, provisioning scripts | a **private git repo** (or a `git bundle` inside the encrypted archive) — every change is a revertible diff |
+| Config | `/etc` subset, compose files, provisioning scripts | a **private git repo** (or a `git bundle` inside the encrypted archive): every change is a revertible diff |
 | Bulk data | media, documents, home dirs | `rsync -a --delete` or ZFS `send`/`syncoid` to a second box |
 | Off-site | all of the above | a second physical location, or object storage; **encrypted before it leaves** |
 
@@ -27,7 +27,7 @@ lives somewhere the backup target can't reach. Lose it → the archives are nois
 
 A `--delete` mirror propagates deletions and bad writes to the copy on the next
 run. Mitigations, in order of preference:
-1. **Snapshots** on the target (ZFS / Btrfs) with a retention policy — real
+1. **Snapshots** on the target (ZFS / Btrfs) with a retention policy: real
    point-in-time recovery.
 2. `rsync --backup --backup-dir=.trash/$(date +%F)` + a cron that prunes `.trash`
    after N days.
@@ -47,7 +47,7 @@ Put that line in the same script that makes the nightly encrypted archive.
 
 - **Weekly**: do the archives exist, are they younger than N hours, do they pass
   an integrity check (`gzip -t`, `age -d | head -c1`, `sha256sum -c`)? Automate
-  it — see [../scripts/backup-verify.sh](../scripts/backup-verify.sh).
+  it. See [../scripts/backup-verify.sh](../scripts/backup-verify.sh).
 - **Quarterly**: restore the DB into a scratch instance and run a query.
   Restore a hypervisor image to a throwaway VMID and boot it. A backup you have
   never restored is a hypothesis.
