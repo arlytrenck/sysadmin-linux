@@ -42,17 +42,23 @@ command -v jq   >/dev/null 2>&1 || { echo "jq is required."   >&2; exit 2; }
 URL="${GRAFANA_URL:-}"
 [ -n "$URL" ] || { echo "Set GRAFANA_URL (e.g. http://localhost:3000)." >&2; exit 2; }
 URL="${URL%/}"
+# Credentials go to curl through a mode-600 config file, never in argv:
+# an argument is visible in `ps` to every other user on the box for as
+# long as the request runs.
+CURLRC="$(mktemp)"
+chmod 600 "$CURLRC"
+trap 'rm -f "$CURLRC"' EXIT
 
 if [ -n "${GRAFANA_TOKEN:-}" ]; then
-  AUTH=(-H "Authorization: Bearer ${GRAFANA_TOKEN}")
+  printf 'header = "Authorization: Bearer %s"\n' "$GRAFANA_TOKEN" > "$CURLRC"
 elif [ -n "${GRAFANA_USER:-}" ] && [ -n "${GRAFANA_PASS:-}" ]; then
-  AUTH=(-u "${GRAFANA_USER}:${GRAFANA_PASS}")
+  printf 'user = "%s:%s"\n' "$GRAFANA_USER" "$GRAFANA_PASS" > "$CURLRC"
 else
   echo "Provide GRAFANA_TOKEN, or GRAFANA_USER + GRAFANA_PASS." >&2
   exit 2
 fi
 
-api() { curl -fsS "${AUTH[@]}" "$URL/api/$1" 2>/dev/null; }
+api() { curl -fsS --config "$CURLRC" "$URL/api/$1" 2>/dev/null; }
 
 scrub() {
   jq '
@@ -67,7 +73,22 @@ scrub() {
     mask'
 }
 
-rm -rf "$OUT"
+# The export starts from a clean directory, but "rm -rf $OUT" on a value that
+# comes straight from -o will happily take out /etc or a home directory on a
+# typo. Only clear a directory this script recognises as one of its own.
+if [ -e "$OUT" ]; then
+  if [ ! -d "$OUT" ]; then
+    echo "Refusing to overwrite '$OUT': not a directory." >&2
+    exit 2
+  fi
+  if [ -n "$(find "$OUT" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ] \
+     && [ ! -f "$OUT/meta/health.json" ]; then
+    echo "Refusing to clear '$OUT': not empty, and not a previous export" >&2
+    echo "(no meta/health.json). Remove it yourself or pick another -o." >&2
+    exit 2
+  fi
+  rm -rf "${OUT:?}"
+fi
 mkdir -p "$OUT/dashboards" "$OUT/datasources" "$OUT/alerting" "$OUT/meta"
 
 echo "== meta =="
