@@ -44,7 +44,7 @@ sed -E '
 '
 ```
 
-For structured JSON, a `jq` `walk` that masks by key name is more robust — see
+For structured JSON, a `jq` `walk` that masks by key name is more robust. See
 [grafana-dashboard-export.sh](../scripts/grafana-dashboard-export.sh).
 
 ## Store it

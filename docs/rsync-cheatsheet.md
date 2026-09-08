@@ -1,6 +1,6 @@
 # rsync Cheatsheet
 
-Fast, resumable, delta-based copying — locally, over SSH, and to/from network
+Fast, resumable, delta-based copying: locally, over SSH, and to/from network
 mounts. The focus here is the flags that matter and the ones that will bite
 you (`--delete`, trailing slashes, `--size-only` on CIFS). See also
 [backup-3-2-1-runbook.md](backup-3-2-1-runbook.md) and
@@ -29,7 +29,7 @@ rsync -a --info=progress2 src/ dst/        # single overall progress bar (rsync 
 
 `-a` (archive) = `-rlptgoD`: recurse, symlinks, perms, times, group, owner,
 devices/specials. It does **not** include `-H` (hardlinks), `-A` (ACLs),
-`-X` (xattrs), or `-S` (sparse) — add those explicitly if you need them.
+`-X` (xattrs), or `-S` (sparse). Add those explicitly if you need them.
 
 ## Flags worth knowing
 
@@ -37,7 +37,7 @@ devices/specials. It does **not** include `-H` (hardlinks), `-A` (ACLs),
 |------|--------|
 | `-n` / `--dry-run` | change nothing, print what would happen |
 | `-c` / `--checksum` | compare by checksum, not size+mtime (slow, thorough) |
-| `--size-only` | compare by size alone — skip files whose size matches |
+| `--size-only` | compare by size alone: skip files whose size matches |
 | `--ignore-times` | copy every file regardless (re-sync after a bad run) |
 | `-u` / `--update` | skip files that are newer on the destination |
 | `--delete` | delete dest files that no longer exist in source |
@@ -107,11 +107,11 @@ rsync -av --rsync-path='sudo rsync' src/ user@host:/dst/     # write as root on 
 ```
 
 - Compression (`-z`) helps on slow links, hurts on fast LAN / already-
-  compressed data (video, archives) — measure.
+  compressed data (video, archives): measure.
 - `-e` sets the remote shell; put host-specific options in `~/.ssh/config`
   instead and just `rsync -av src/ host:/dst/`.
 
-## Network mounts (CIFS/SMB, NFS) — the mtime trap
+## Network mounts (CIFS/SMB, NFS): the mtime trap
 
 CIFS destinations often **cannot preserve mtime** (`utime()` on the share is
 ignored). With default size+mtime comparison, rsync then re-copies unchanged
@@ -121,9 +121,9 @@ files forever, or an `-u`/`-t` combination masks real drift.
   size-based and stable. Accept that a same-size content change won't be
   detected (rare for most data; use `-c` for a periodic deep pass).
 - `--modify-window=2` tolerates FAT/SMB 2-second timestamp granularity.
-- CIFS `soft` mounts can truncate a large file on a network blip — pair with
+- CIFS `soft` mounts can truncate a large file on a network blip. Pair with
   `--partial-dir` and verify big files afterward (`sha256sum`, `gzip -t`).
-- Symlinks fail on CIFS (`ln: Operation not supported`) — rsync `-l` will
+- Symlinks fail on CIFS (`ln: Operation not supported`): rsync `-l` will
   error; use `-L` (copy the target) or `--munge-links`.
 
 ## Snapshot-style backups with `--link-dest`
@@ -134,14 +134,14 @@ rsync -a --delete --link-dest=/backup/latest / "$DEST/"
 ln -sfn "$DEST" /backup/latest
 ```
 
-Unchanged files are hardlinks to the previous run — each snapshot costs only
-the delta, but browses as a full tree. (Dedicated tools — restic, borg,
-ZFS/btrfs snapshots — do this better; `--link-dest` is the no-extra-software
+Unchanged files are hardlinks to the previous run: each snapshot costs only
+the delta, but browses as a full tree. (Dedicated tools: restic, borg,
+ZFS/btrfs snapshots. Do this better; `--link-dest` is the no-extra-software
 option.)
 
 ## Exit codes
 
-`0` ok · `23` partial transfer (some files failed — perms, vanished) · `24`
+`0` ok · `23` partial transfer (some files failed: perms, vanished) · `24`
 source files vanished during run (usually benign) · `25` `--max-delete`
 limit hit · `30`/`35` timeout. In scripts, treat `24` as a warning and
 anything else non-zero as failure.

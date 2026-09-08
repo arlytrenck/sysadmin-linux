@@ -9,6 +9,10 @@ on:
     paths:
       - 'scripts/**.sh'
       - '.github/workflows/shellcheck.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   shellcheck:
@@ -17,9 +21,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # Catches the syntax errors that would otherwise show up as a wall of
+      # confusing ShellCheck output.
+      - name: Syntax-check every script
+        run: |
+          fail=0
+          for f in scripts/*.sh; do
+            bash -n "$f" || { echo "SYNTAX FAIL: $f"; fail=1; }
+          done
+          [ "$fail" -eq 0 ] || exit 1
+          echo "All scripts parse."
+
+      # Pinned to a release tag rather than @master: this repo is public, and
+      # a third-party action tracking a branch can change under us at any time.
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: './scripts'
           severity: warning
-

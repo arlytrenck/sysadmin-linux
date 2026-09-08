@@ -2,7 +2,7 @@
 
 A focused guide for the two most common self-hosted database engines.
 Pairs with [backup-dr-testing-runbook.md](backup-dr-testing-runbook.md),
-which covers *testing* that these backups actually restore — do that
+which covers *testing* that these backups actually restore. Do that
 periodically, not just once.
 
 ## MySQL / MariaDB
@@ -43,8 +43,8 @@ grep -c '^INSERT INTO' mydb-2025-01-01.sql
 grep '^-- Dump completed' mydb-2025-01-01.sql   # mysqldump writes this on success
 ```
 
-Neither check proves the backup restores cleanly — only a real restore
-test does that (see the DR runbook) — but they catch a truncated or
+Neither check proves the backup restores cleanly: only a real restore
+test does that (see the DR runbook), but they catch a truncated or
 failed dump early.
 
 ## PostgreSQL
@@ -79,7 +79,7 @@ pg_basebackup -U replication_user -D /backup/base -Fp -Xs -P
 ```
 
 Combined with continuous WAL archiving, this lets you restore to any
-moment, not just the last dump time — the right approach once your RPO
+moment, not just the last dump time, the right approach once your RPO
 is measured in minutes rather than "since last night's dump".
 
 ### Verifying a PostgreSQL backup without a full restore
@@ -97,10 +97,10 @@ backup time rather than during an incident.
 - **Encrypt backups at rest**, especially if they leave the host
   (`gpg --symmetric` or your storage layer's native encryption).
 - **Keep credentials for the backup user separate and minimally
-  privileged** — a backup account needs read access, not full admin.
+  privileged**. A backup account needs read access, not full admin.
 - **Store backups off the source host.** A backup that lives only on the
   server it backs up is lost in the same failure that takes the server.
-- **Automate + alert on failure**, not just on success — a silently
+- **Automate + alert on failure**, not just on success, a silently
   failing nightly cron job is worse than no backup, because it creates
   false confidence. `update-and-patch.sh`-style non-zero exit codes wired
   into a webhook (see

@@ -23,7 +23,7 @@ parted /dev/sdb mklabel gpt                             # new GPT table (destroy
 parted -a optimal /dev/sdb mkpart primary ext4 0% 100%  # one partition, full disk
 partprobe /dev/sdb                                      # re-read the partition table
 ```
-`fdisk /dev/sdb` (interactive, MBR or GPT) is the other common path — `n`
+`fdisk /dev/sdb` (interactive, MBR or GPT) is the other common path: `n`
 for new, `p` to print, `w` to write. Nothing is written to disk until `w`;
 `q` aborts safely.
 
@@ -39,7 +39,7 @@ xfs_repair /dev/sdb1                     # xfs check/repair (unmount first)
 resize2fs /dev/sdb1                      # grow ext4 to fill the partition
 xfs_growfs /mnt/data                     # grow xfs (online, mounted)
 ```
-xfs can only grow, never shrink — plan partition sizes accordingly, or use
+xfs can only grow, never shrink. Plan partition sizes accordingly, or use
 LVM underneath so growing means extending the logical volume, not the
 partition.
 
@@ -67,9 +67,9 @@ resize2fs /dev/data-vg/app-lv                         # then grow the ext4 files
 xfs_growfs /mnt/app                                   # or grow xfs (mounted, by mountpoint)
 ```
 `lvextend -r` does the filesystem resize automatically for ext2/3/4 and
-xfs in one step — worth using instead of the two separate commands above.
+xfs in one step: worth using instead of the two separate commands above.
 
-## Snapshots (LVM thin or classic — for a consistent point-in-time copy, not a backup)
+## Snapshots (LVM thin or classic, for a consistent point-in-time copy, not a backup)
 
 ```bash
 lvcreate -L 5G -s -n app-snap /dev/data-vg/app-lv     # classic COW snapshot
@@ -77,7 +77,7 @@ mount -o ro /dev/data-vg/app-snap /mnt/snap           # mount read-only to back 
 lvremove /dev/data-vg/app-snap                        # remove once done
 ```
 A classic snapshot fills up (and auto-drops) if the source changes more
-than the snapshot's allocated size before it's removed — size it for the
+than the snapshot's allocated size before it's removed: size it for the
 churn expected during the backup window, not just the data size.
 
 ## Mounting and fstab
@@ -110,12 +110,12 @@ swapon --show                      # active swap devices/files
 ## Notes
 
 - Always re-check `lsblk`/`blkid` immediately before an `mkfs`/`parted`
-  command against a specific device path — device names (`/dev/sdb` etc.)
+  command against a specific device path: device names (`/dev/sdb` etc.)
   can shift between boots, especially after adding/removing disks.
 - LVM adds a layer of indirection that pays for itself the first time a
   volume needs to grow without downtime; it's not needed for a single
   disk that will never be resized.
 - `wipefs -a /dev/sdX` clears stale filesystem/LVM/RAID signatures from a
-  disk being repurposed — do this before `pvcreate`/`mkfs` on a disk that
+  disk being repurposed. Do this before `pvcreate`/`mkfs` on a disk that
   previously held something else, or the old signature can confuse tools
   that auto-detect filesystem type.

@@ -23,7 +23,7 @@ ssh-add -l                          # list loaded keys
 ssh -A host                         # forward the agent (only to hosts you trust)
 ```
 
-## `~/.ssh/config` — stop typing flags
+## `~/.ssh/config`: stop typing flags
 ```
 Host prod
     HostName 203.0.113.10
