@@ -2,7 +2,7 @@
 
 A blameless postmortem structure for after an incident is resolved. Pairs
 with [incident-response-runbook.md](incident-response-runbook.md), which
-covers handling the incident while it's happening — this document is for
+covers handling the incident while it's happening. This document is for
 afterward, once things are calm and the goal shifts from "make it stop"
 to "make sure it doesn't happen the same way again."
 
@@ -11,7 +11,7 @@ to "make sure it doesn't happen the same way again."
 The point of a postmortem is to find and fix the conditions that allowed
 an incident to happen, not to find who to blame for it. A postmortem
 that reads as an accusation teaches people to hide mistakes and near
-misses instead of reporting them — which is exactly the information you
+misses instead of reporting them, which is exactly the information you
 need to prevent a repeat. Write it as if the person who made the change
 that triggered the incident is going to read it and feel safe doing so,
 because they probably will.
@@ -28,7 +28,7 @@ Not every incident needs a full writeup. A reasonable bar: anything that
 paged someone outside business hours, caused customer-visible impact
 beyond a few minutes, or very nearly did either of those (a "near miss"
 is often more informative than an incident that was already well
-understood). Use judgment — the goal is learning something, not
+understood). Use judgment. The goal is learning something, not
 filling out paperwork.
 
 ## Template
@@ -41,7 +41,7 @@ ten seconds.
 ### Timeline
 Timestamped, in UTC (or a single consistent timezone, stated up front).
 Include when the underlying issue was introduced if known, not just
-when it was detected — the gap between those two is often the most
+when it was detected. The gap between those two is often the most
 actionable part of the timeline.
 
 ```
@@ -54,31 +54,31 @@ actionable part of the timeline.
 ```
 
 ### Impact
-Concretely: what was down or degraded, for how long, and who noticed —
+Concretely: what was down or degraded, for how long, and who noticed:
 customers, an internal team, nobody (a near miss). Avoid vague terms
 like "some users" if you can find a real number or scope.
 
 ### Root cause
-The technical cause, and — this is the part that's easy to skip — the
+The technical cause, and. This is the part that's easy to skip, the
 *contributing* causes that let it become an incident instead of a
 non-event. A single root cause is rare; usually it's "change X plus the
 fact that monitoring gap Y meant nobody caught it for 20 minutes."
 
 ### Detection
-How was it found — an alert, a customer report, someone noticing by
+How was it found: an alert, a customer report, someone noticing by
 chance? If it was found later than it should have been, that's itself
 a finding: what would have caught it sooner (a
 [log-anomaly-scan.sh](../scripts/log-anomaly-scan.sh) run more
 frequently, a check that doesn't exist yet)?
 
 ### Response
-What actually happened during mitigation, including any dead ends —
+What actually happened during mitigation, including any dead ends:
 "we first suspected X and spent 10 minutes on it before finding the
 real cause" is useful information, not something to omit for looking
 tidy.
 
 ### What went well
-Genuinely worth including — a good runbook, a fast page, a clean
+Genuinely worth including: a good runbook, a fast page, a clean
 rollback. Reinforces what to keep doing.
 
 ### What went poorly
@@ -89,7 +89,7 @@ have.
 ### Action items
 Each one: owner, and either a due date or an explicit decision not to
 do it and why. An action item with no owner doesn't happen. Track these
-somewhere that gets reviewed — a postmortem whose action items are
+somewhere that gets reviewed. A postmortem whose action items are
 never revisited is a postmortem that didn't help.
 
 ### Appendix

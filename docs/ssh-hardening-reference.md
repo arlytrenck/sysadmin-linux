@@ -3,7 +3,7 @@
 Concrete `sshd_config` settings referenced by the hardening checklist, with
 the reasoning behind each one. Test every change with `sshd -t` before
 reloading, and keep an existing session open until you've confirmed a new
-connection works — a bad `sshd_config` can lock you out.
+connection works, a bad `sshd_config` can lock you out.
 
 ## Baseline settings
 
@@ -43,20 +43,20 @@ sudo systemctl reload sshd
 ```
 
 `sshd -t` catches syntax errors but not logical ones (e.g., locking out the
-only account with keys configured) — always keep a second session open
+only account with keys configured), always keep a second session open
 while testing.
 
 ## Key management
 
 - Generate keys with `ssh-keygen -t ed25519` (Ed25519 is preferred over RSA
-  for new keys — smaller, faster, and considered at least as secure at
+  for new keys: smaller, faster, and considered at least as secure at
   typical key sizes).
 - Store `authorized_keys` with `600` permissions and the `.ssh` directory
-  with `700`, owned by the user — sshd will silently refuse loose
+  with `700`, owned by the user: sshd will silently refuse loose
   permissions.
 - Prefer one key per person per device over shared keys, so a compromised
   laptop doesn't mean rotating a key used everywhere.
-- Rotate and remove keys when someone leaves or a device is retired —
+- Rotate and remove keys when someone leaves or a device is retired:
   `user-activity-report.sh` and a periodic `authorized_keys` review both
   help catch stale entries.
 

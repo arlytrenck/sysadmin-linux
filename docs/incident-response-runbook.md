@@ -12,7 +12,7 @@ making things worse.
   (`curl`, `systemctl status`, `journalctl -xe`) rather than trusting a
   single dashboard.
 - Is this isolated to one host, or fleet-wide?
-- Note the time you started — you'll want this for the postmortem.
+- Note the time you started. You'll want this for the postmortem.
 
 ## 2. Contain
 
@@ -20,7 +20,7 @@ making things worse.
   SSH sessions, unfamiliar cron jobs, outbound traffic to unknown hosts):
   - Isolate the host from the network if you can afford the downtime
     (better to contain than let it spread)
-  - Do **not** reboot or wipe the box yet — you may need the running state
+  - Do **not** reboot or wipe the box yet. You may need the running state
     for forensics
   - Rotate credentials that may have been exposed
 - If this looks like a capacity/performance issue:
@@ -51,8 +51,8 @@ first symptom against recent deploys, config changes, or cron jobs
   back a deploy, free disk space) over a large fix under pressure
 - Use `service-health-check.sh --restart` for a quick, logged restart of
   known units
-- If you have to make an emergency change, note exactly what you changed —
-  you'll need it for step 6
+- If you have to make an emergency change, note exactly what you changed.
+  You'll need it for step 6
 
 ## 5. Verify
 
@@ -71,6 +71,6 @@ Within 24 hours, write a short postmortem covering:
 - Impact (what was affected, for how long)
 - Follow-up actions, each with an owner
 
-Keep this factual and blameless — the goal is a system that fails this way
+Keep this factual and blameless. The goal is a system that fails this way
 less often, not a scapegoat.
 

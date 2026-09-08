@@ -44,7 +44,7 @@ openssl verify -CAfile chain.pem cert.pem
   behind NAT/firewall and does wildcards; needs an API token for your DNS
   provider (scope it to *DNS edit for one zone*, nothing more).
 - Renew early (30 days out), reload the service after renewal, and **monitor
-  expiry independently** — renewal automation fails silently more often than
+  expiry independently**: renewal automation fails silently more often than
   you'd like. See [../scripts/cert-expiry-check.sh](../scripts/cert-expiry-check.sh).
 
 ## Quick server-config sanity

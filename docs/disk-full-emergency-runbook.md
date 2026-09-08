@@ -1,6 +1,6 @@
 # Disk Full Emergency Runbook
 
-A filesystem at or near 100% — services failing to write, databases going
+A filesystem at or near 100%: services failing to write, databases going
 read-only, logins hanging. This is the "stop the bleeding" procedure. See
 also [disk-usage-report.sh](../scripts/disk-usage-report.sh) and
 [log-cleanup.sh](../scripts/log-cleanup.sh).
@@ -35,7 +35,7 @@ ncdu -x /var
 
 ### The classic culprit: a deleted-but-open file
 
-A log rotated or deleted while a process still holds it open — space isn't
+A log rotated or deleted while a process still holds it open: space isn't
 freed until the process closes it. `du` won't see it; `df` still counts it.
 
 ```bash
@@ -139,13 +139,13 @@ Databases may need an explicit restart to leave read-only / recovery mode.
 ## 5. Prevent the recurrence
 
 - Alert on disk at **80%** and on the **fill rate** (projected-full-in-Nh),
-  not just a hard threshold — see
+  not just a hard threshold. See
   [monitoring-alerting-guide.md](monitoring-alerting-guide.md).
 - Cap the journal (`SystemMaxUse=`) and Docker logs (`daemon.json`).
 - Put a `logrotate` policy on any app that writes its own logs.
 - Give databases their own filesystem so a runaway table can't take down the
   OS.
-- Watch inodes too (millions of tiny files — mail queues, session dirs,
-  cache) — a filesystem can hit 100% inodes at 30% bytes.
+- Watch inodes too (millions of tiny files: mail queues, session dirs,
+  cache). A filesystem can hit 100% inodes at 30% bytes.
 - Record what filled it in the change log / a
   [postmortem](incident-postmortem-template.md).

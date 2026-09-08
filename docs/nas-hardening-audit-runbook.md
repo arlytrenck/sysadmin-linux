@@ -5,7 +5,7 @@ roll-your-own). Do it once properly, then re-check quarterly. Items are grouped
 by where you'll find them in a typical NAS UI.
 
 ## Storage & data integrity
-- [ ] Pool/volume status **Healthy**. Note the **RAID level** — if it's RAID0 /
+- [ ] Pool/volume status **Healthy**. Note the **RAID level**: if it's RAID0 /
       striped / a JBOD span, you have **zero** redundancy: one disk lost = all
       data on that pool lost. Decide deliberately whether that's acceptable for
       what's on it.
@@ -20,7 +20,7 @@ by where you'll find them in a typical NAS UI.
 
 ## Snapshots (a mirror is not a snapshot)
 - [ ] Filesystem snapshots enabled on the important shares (e.g. hourly keep 24,
-      daily keep 7) — this is your real point-in-time recovery.
+      daily keep 7). This is your real point-in-time recovery.
 - [ ] Understand that an `rsync --delete` mirror to a second NAS propagates a bad
       write on the next run. Snapshots on the *target* fix this; a time-limited
       `.trash` dir is the weak fallback.
@@ -41,7 +41,7 @@ by where you'll find them in a typical NAS UI.
       `chmod 600`.
 
 ## Network exposure
-- [ ] Management UI **not** reachable from untrusted networks — firewall it to a
+- [ ] Management UI **not** reachable from untrusted networks: firewall it to a
       management VLAN / specific hosts, or only over VPN. If the built-in
       firewall is "enabled" it must actually have rules; enabled-with-no-rules
       often means default-allow (a no-op).
@@ -54,7 +54,7 @@ by where you'll find them in a typical NAS UI.
 ## Power & alerting
 - [ ] On a **UPS** with safe-shutdown configured (USB or networked). A power
       event mid-write on a no-redundancy array is the nightmare case.
-- [ ] **Notifications configured and tested** — email *and* push — for: drive
+- [ ] **Notifications configured and tested**: email *and* push. For: drive
       failure, volume degraded/crashed, scrub result, SMART warning, UPS events,
       update available, abnormal login. A NAS that can't tell you it's dying is
       a single point of silent failure.

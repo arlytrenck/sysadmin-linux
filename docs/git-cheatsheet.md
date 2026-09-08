@@ -1,6 +1,6 @@
 # Git for Ops
 
-Config in git, secrets out of git. The value is the **diff** — every change to a
+Config in git, secrets out of git. The value is the **diff**: every change to a
 compose file, a Caddyfile, `/etc` is something you can see and revert.
 
 ## Recover from mistakes
@@ -30,9 +30,9 @@ git log --all -p | grep -nEi 'api[_-]?key|secret|token|password|BEGIN .*PRIVATE'
 git ls-files | xargs grep -nEi 'password|secret' 2>/dev/null
 ```
 If a secret is in **history** (not just the current tree), a plain delete isn't
-enough — either rewrite history (`git filter-repo --path X --invert-paths`) or,
+enough: either rewrite history (`git filter-repo --path X --invert-paths`) or,
 simpler for a young repo, `rm -rf .git && git init` and one clean commit. Then
-**rotate the secret regardless** — assume it leaked.
+**rotate the secret regardless**: assume it leaked.
 
 ## Config-repo hygiene
 ```bash
@@ -61,7 +61,7 @@ git remote set-url origin git@host:owner/repo.git
 #     IdentitiesOnly yes
 # then:  git remote set-url origin git@gh-thisrepo:owner/repo.git
 ```
-A **deploy key** is scoped to one repo — safer on a server than an account key.
+A **deploy key** is scoped to one repo: safer on a server than an account key.
 
 ## Handy
 ```bash

@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for considering a contribution. This is a small, personal collection
-of sysadmin scripts and docs, kept simple on purpose — contributions are
+of sysadmin scripts and docs, kept simple on purpose: contributions are
 welcome but should fit that spirit.
 
 ## Reporting a bug or suggesting a change
@@ -15,17 +15,17 @@ Open an issue describing:
 ## Submitting a change
 
 1. Fork the repo and create a branch for your change.
-2. Keep changes focused — one script/doc per pull request is easier to
+2. Keep changes focused. One script/doc per pull request is easier to
    review than a bundle of unrelated fixes.
 3. For scripts:
    - Match the existing style: a comment-block header with `.SYNOPSIS`/
      usage description, options parsed with `getopts` (bash) or named
      parameters with comment-based help (PowerShell), and a `-h`/`-Help`
      option.
-   - Scripts should fail safely — prefer erroring out over guessing, and
+   - Scripts should fail safely. Prefer erroring out over guessing, and
      avoid destructive actions without a clear opt-in flag.
    - Run `shellcheck` (bash) or `PSScriptAnalyzer` (PowerShell) locally
-     before submitting — CI runs the same check.
+     before submitting: CI runs the same check.
 4. For docs:
    - Keep the same tone: practical, concrete commands over abstract
      advice. Prefer real command examples to prose descriptions.

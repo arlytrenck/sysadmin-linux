@@ -1,6 +1,6 @@
 # Monitoring & Alerting Setup Guide
 
-A practical starting point for monitoring a small Linux fleet — from "cron
+A practical starting point for monitoring a small Linux fleet: from "cron
 job plus a webhook" up through a proper metrics stack. Pick the tier that
 matches your scale; there's no need to run Prometheus for two servers.
 
@@ -27,12 +27,12 @@ aren't tuned per-host.
 Once you want trends (is disk usage growing linearly or did something
 spike?) and a dashboard, add a metrics agent:
 
-- **Prometheus node_exporter** + a self-hosted Prometheus + Grafana — full
+- **Prometheus node_exporter** + a self-hosted Prometheus + Grafana: full
   control, more to operate yourself.
-- **Netdata** — near-zero-config, good default dashboards, works well for
+- **Netdata**: near-zero-config, good default dashboards, works well for
   a handful of hosts without a central server if you just want per-host
   visibility.
-- A hosted option (Datadog, Grafana Cloud, etc.) — less infrastructure to
+- A hosted option (Datadog, Grafana Cloud, etc.): less infrastructure to
   run, ongoing cost scales with hosts/metrics.
 
 Minimum useful metric set for a general-purpose server: CPU, memory, disk
@@ -43,10 +43,10 @@ usage and I/O, network throughput, and systemd unit failures.
 Once metrics are flowing, define alert rules rather than eyeballing
 dashboards:
 
-- Alert on trend, not just threshold, where possible — "disk will fill in
+- Alert on trend, not just threshold, where possible: "disk will fill in
   under 48 hours at current growth rate" catches problems earlier than a
   flat "under 10% free" rule and fires less often on temporary spikes.
-- Alert on absence, not just presence — a host that stops reporting
+- Alert on absence, not just presence, a host that stops reporting
   metrics at all is itself worth an alert (a metrics agent that died is
   indistinguishable from "everything's fine" if you only alert on bad
   values).
@@ -77,7 +77,7 @@ roughly by operational weight:
 ## A note on alert fatigue
 
 More alerts is not more safety once people start ignoring them. Every
-alert should be actionable — if an alert fires and the response is always
+alert should be actionable: if an alert fires and the response is always
 "yeah, ignore that one," either fix the underlying threshold or remove the
 alert. Review your alert rules periodically, not just when adding new
 ones.

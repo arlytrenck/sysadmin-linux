@@ -1,7 +1,7 @@
 # Secret Rotation Runbook
 
-A repeatable procedure for rotating a credential — an API token, a database
-password, an SSH key, a service account — with minimal downtime and a clean
+A repeatable procedure for rotating a credential: an API token, a database
+password, an SSH key, a service account: with minimal downtime and a clean
 rollback. Applies whether the secret leaked, an employee left, or it's just
 overdue.
 
@@ -73,12 +73,12 @@ after rotating.
   ```
 - **Docker Compose:** the value goes in the stack's `chmod 600` `.env`
   (git-ignored), referenced as `${VAR}`. Apply with
-  `docker compose -f <stack> up -d` — not `restart`.
+  `docker compose -f <stack> up -d`, not `restart`.
 - **Files the app reads:** write to a temp file, `chmod 600`, `chown` to the
   service user, then `mv` into place (atomic), then signal the app
   (`systemctl reload` / `SIGHUP` / restart).
 - **Never** commit the value, echo it into your shell history
-  (`export X=...` is in `~/.bash_history` — prefix a space or use `read -s`),
+  (`export X=...` is in `~/.bash_history`: prefix a space or use `read -s`),
   or paste it into a ticket/chat. Put a *pointer* ("rotated 2026-05, in
   Vault at path X") in your notes, not the secret.
 
@@ -117,7 +117,7 @@ being used and the old one has gone quiet.
 |--------|-------------|
 | **SSH key** | Add the new pubkey to `authorized_keys` *first*, test login in a second session, then remove the old line. Update `~/.ssh/config`. Rotate the key's passphrase separately with `ssh-keygen -p`. |
 | **TLS private key / cert** | Reissue the cert with a fresh key (don't reuse the keypair). Reload the server (`nginx -s reload`, `systemctl reload caddy`). Check the served chain with `openssl s_client -connect host:443`. |
-| **Database user password** | `ALTER USER svc WITH PASSWORD '...'` — existing sessions stay connected; only new connects use it. Restart the app to force reconnection. |
+| **Database user password** | `ALTER USER svc WITH PASSWORD '...'`: existing sessions stay connected; only new connects use it. Restart the app to force reconnection. |
 | **API token with scopes** | Issue the new one with the *same or narrower* scopes; over-scoped replacements are a common drift. |
-| **Shared account** | Rotating a shared secret logs everyone out — announce it. Better: replace with per-user credentials while you're here. |
+| **Shared account** | Rotating a shared secret logs everyone out: announce it. Better: replace with per-user credentials while you're here. |
 | **Cloud provider key** | Check for it in CI, IaC state, `~/.aws`/`~/.config`, and any serverless env before revoking. |

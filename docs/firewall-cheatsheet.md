@@ -1,7 +1,7 @@
 # Firewall Cheatsheet
 
 Inspecting and changing host packet filtering across the three front-ends
-you'll actually meet — `nftables`, `ufw`, `firewalld` — plus the legacy
+you'll actually meet: `nftables`, `ufw`, `firewalld`. Plus the legacy
 `iptables` view and the Docker interaction that surprises everyone. See also
 [firewall-rules-dump.sh](../scripts/firewall-rules-dump.sh) and
 [server-hardening-checklist.md](server-hardening-checklist.md).
@@ -19,7 +19,7 @@ systemctl is-active nftables ufw firewalld
 Pick **one** front-end and stick to it. Running `ufw` and raw `nft` rules and
 `firewalld` at once is how you get rules that silently don't apply.
 
-`iptables` on a modern distro is usually `iptables-nft` — a translation
+`iptables` on a modern distro is usually `iptables-nft`, a translation
 shim. `iptables -S` shows you a compatible view; `nft list ruleset` shows the
 real thing.
 
@@ -111,17 +111,17 @@ Mitigations, best first:
 
 1. **Bind to a specific address, not `0.0.0.0`:**
    `-p 127.0.0.1:8080:80` (proxy-only) or `-p 10.0.0.5:8080:80` (LAN-only).
-   This is the real fix — see
+   This is the real fix. See
    [container-security-guide.md](container-security-guide.md).
 2. **Filter in `DOCKER-USER`** (evaluated before `DOCKER`, survives restarts):
    ```bash
    sudo iptables -I DOCKER-USER -i eth0 ! -s 10.0.0.0/24 -p tcp --dport 8080 -j DROP
    ```
-3. **`ufw-docker`** — a helper that adds a `DOCKER-USER` block plus
+3. **`ufw-docker`**: a helper that adds a `DOCKER-USER` block plus
    per-container allow rules driven by `ufw route allow`. Treat adopting it
    as a small project, not a toggle; test every published port after.
 4. Set `"iptables": false` in `/etc/docker/daemon.json` only if you're
-   prepared to write all the NAT/forward rules yourself — usually not worth it.
+   prepared to write all the NAT/forward rules yourself, usually not worth it.
 
 Verify what's *actually* reachable rather than trusting the firewall config:
 
@@ -150,5 +150,5 @@ sudo ufw logging medium
 journalctl -k | grep -E 'nft-drop|UFW BLOCK|IN=.*DPT='
 ```
 
-Turn verbose logging off again once you've diagnosed the issue — it's noisy
+Turn verbose logging off again once you've diagnosed the issue. It's noisy
 and fills the journal.
