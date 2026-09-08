@@ -11,7 +11,7 @@ lsof +L1                    # deleted-but-still-open files holding space
 ```
 
 If `df` and `du` disagree wildly, look for a deleted file still held open
-by a process (common with log files a service still has a handle on) —
+by a process (common with log files a service still has a handle on):
 `lsof +L1` will show it; restarting the offending service frees the space.
 
 ## Memory pressure
@@ -37,7 +37,7 @@ journalctl -u <unit> -n 100 --no-pager
 systemctl show <unit> -p ExecStart      # confirm what it's actually running
 ```
 
-Check for a config syntax error first — most daemons will tell you if you
+Check for a config syntax error first. Most daemons will tell you if you
 run them with a `-t`/`--test`/`configtest` flag (nginx, sshd, and many
 others support this).
 

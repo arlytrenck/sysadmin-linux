@@ -36,13 +36,13 @@ resolver config, not DNS itself.
 
 ## The resolver stack, in order
 
-1. **`/etc/nsswitch.conf`** — the `hosts:` line decides source order, e.g.
+1. **`/etc/nsswitch.conf`**: the `hosts:` line decides source order, e.g.
    `hosts: files resolve [!UNAVAIL=return] dns`. `files` = `/etc/hosts`.
-2. **`/etc/hosts`** — static overrides. Always wins if `files` is first.
-3. **`/etc/resolv.conf`** — `nameserver`, `search`, `options`. On a
+2. **`/etc/hosts`**: static overrides. Always wins if `files` is first.
+3. **`/etc/resolv.conf`**: `nameserver`, `search`, `options`. On a
    systemd-resolved system this is usually a symlink to
    `/run/systemd/resolve/stub-resolv.conf` pointing at `127.0.0.53`.
-4. **`systemd-resolved`** (if used) — actual upstreams set per-link by
+4. **`systemd-resolved`** (if used): actual upstreams set per-link by
    NetworkManager / `networkd` / DHCP, seen via `resolvectl status`.
 
 ```bash
@@ -73,7 +73,7 @@ dig +nocmd +noall +answer example.com         # compact
 ```
 
 - A record change is invisible to a resolver that still has the old answer
-  cached — wait out the **old** TTL, not the new one.
+  cached: wait out the **old** TTL, not the new one.
 - Lower the TTL (e.g. to 300s) *a day before* a planned cutover, then raise
   it again after.
 - Check an authoritative server directly (`dig @ns1... +norecurse`) to see
@@ -109,7 +109,7 @@ resolvectl query --validate=yes example.com
 ```
 
 A broken DNSSEC chain returns `SERVFAIL` from a validating resolver but works
-from a non-validating one — a useful discriminator.
+from a non-validating one, a useful discriminator.
 
 ## Debugging checklist
 
@@ -126,11 +126,11 @@ tcpdump -ni any port 53                # 8. is the query even leaving the box, a
 
 ## Common gotchas
 
-- `search` domains in `resolv.conf` append silently — `dig host` might match
+- `search` domains in `resolv.conf` append silently: `dig host` might match
   `host.internal` and mislead you. Test with a trailing dot: `dig host.`
-- `systemd-resolved` caches `NXDOMAIN` too — `resolvectl flush-caches` after
+- `systemd-resolved` caches `NXDOMAIN` too: `resolvectl flush-caches` after
   a record is *added*.
 - A `CNAME` at the zone apex is invalid; providers that "support" it fake it.
-- `nscd` (if installed) is a second cache layer — `nscd -i hosts` to invalidate.
+- `nscd` (if installed) is a second cache layer: `nscd -i hosts` to invalidate.
 - Containers have their own `/etc/resolv.conf` injected by the runtime; debug
   DNS *inside* the container, not just on the host.

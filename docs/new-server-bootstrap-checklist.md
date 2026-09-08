@@ -1,7 +1,7 @@
 # New Server Bootstrap Checklist
 
 A day-0 checklist for a fresh Linux box before it does any real work. Order
-matters — lock down access first, then build. This is the *procedure*; the
+matters: lock down access first, then build. This is the *procedure*; the
 security-specific review it points to in step 5 is
 [server-hardening-checklist.md](server-hardening-checklist.md).
 
@@ -18,7 +18,7 @@ security-specific review it points to in step 5 is
 - [ ] `apt update && apt full-upgrade` (or dnf), reboot if the kernel changed.
 - [ ] Set hostname, timezone (`timedatectl set-timezone …`), and confirm NTP is
       syncing (`timedatectl` → "System clock synchronized: yes").
-- [ ] Unattended security updates (`unattended-upgrades` / `dnf-automatic`) —
+- [ ] Unattended security updates (`unattended-upgrades` / `dnf-automatic`):
       security only, notify on the rest.
 - [ ] Swap: present and sane (or a swapfile); `vm.swappiness=10` for a server.
 - [ ] Journald capped (`/etc/systemd/journald.conf`: `SystemMaxUse=200M`).
@@ -39,7 +39,7 @@ security-specific review it points to in step 5 is
 
 ## 5. Hardening pass
 - [ ] Work through [server-hardening-checklist.md](server-hardening-checklist.md)
-      — passwordless-sudo review, unexpected listening ports, SSH baseline,
+: passwordless-sudo review, unexpected listening ports, SSH baseline,
       package/service pruning, `sysctl` baseline, optional `auditd` +
       AppArmor/SELinux enforcing.
 

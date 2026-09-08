@@ -16,7 +16,13 @@
 #            with the current date.
 #   -b REF   Branch/ref to push to (default: the repo's current branch).
 #   -f FILE  Read directories from FILE (one per line, # comments allowed).
+#   --allow-secrets  Commit even when staged filenames look like secrets.
 #   -h       Show this help.
+#
+# Because this stages everything and pushes it off-host, it refuses to commit
+# a repo where a staged filename looks like a credential (.env, *.pem, *.key,
+# id_rsa, and similar). That is a filename check, not a content scan. Keep a
+# real .gitignore; see docs/config-as-code-repo-hygiene.md.
 #
 # Each repo must already have an `origin` remote and working push auth
 # (deploy key with `IdentitiesOnly`, ssh-agent, etc.). Commits use the repo's
@@ -26,8 +32,17 @@
 
 set -uo pipefail
 
-MSG='mirror: %d' ; BRANCH="" ; LISTFILE=""
+MSG='mirror: %d' ; BRANCH="" ; LISTFILE="" ; ALLOW_SECRETS=0
 usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
+# getopts has no long options, so pull --allow-secrets out of the argument
+# list first. Doing it this way accepts it in any position.
+ARGV=()
+for a in "$@"; do
+  if [ "$a" = "--allow-secrets" ]; then ALLOW_SECRETS=1; else ARGV+=("$a"); fi
+done
+set -- "${ARGV[@]:-}"
+[ "$#" -eq 1 ] && [ -z "$1" ] && shift   # drop the placeholder from an empty array
 
 while getopts ":m:b:f:h" opt; do
   case "$opt" in
@@ -45,7 +60,11 @@ DIRS=("$@")
 if [ -n "$LISTFILE" ]; then
   [ -r "$LISTFILE" ] || { echo "Cannot read list file: $LISTFILE" >&2; exit 2; }
   while IFS= read -r line; do
-    line="${line%%#*}"; line="$(printf '%s' "$line" | xargs)"
+    # xargs was doing the whitespace trim, but it also interprets quotes and
+    # backslashes, so a path containing either came out mangled.
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
     [ -n "$line" ] && DIRS+=("$line")
   done < "$LISTFILE"
 fi
@@ -69,6 +88,26 @@ for d in "${DIRS[@]}"; do
   email="$(git -C "$d" config user.email || echo 'git-mirror@localhost')"
 
   git -C "$d" add -A
+
+  # "add -A" stages whatever is in the tree, and this pushes it off-host. A
+  # .env that was never meant to leave the box goes with it. Names are checked,
+  # not contents: a cheap guard against the obvious mistake, not a scanner.
+  # Use .gitignore for the real thing; see docs/config-as-code-repo-hygiene.md.
+  staged_secrets="$(git -C "$d" diff --cached --name-only \
+    | grep -iE '(^|/)(\.env|\.envrc|.*\.pem|.*\.key|.*\.pfx|.*\.p12|id_(rsa|ed25519|ecdsa)|.*secret.*|.*credential.*)$' \
+    || true)"
+  if [ -n "$staged_secrets" ]; then
+    echo "  ! refusing to commit: secret-looking files are staged"
+    printf '      %s\n' "$staged_secrets"
+    echo "      Add them to .gitignore, or pass --allow-secrets to override."
+    if [ "$ALLOW_SECRETS" -eq 0 ]; then
+      git -C "$d" reset -q
+      rc=1
+      continue
+    fi
+    echo "      (--allow-secrets set, committing anyway)"
+  fi
+
   if git -C "$d" diff --cached --quiet; then
     echo "  clean (nothing to commit)"
   else
@@ -79,10 +118,14 @@ for d in "${DIRS[@]}"; do
     fi
   fi
 
-  if git -C "$d" push -q origin "HEAD:$ref" 2>/dev/null; then
+  # The old version sent git's stderr to /dev/null and guessed at the cause in
+  # the message, which left a nightly cron failure with nothing to diagnose.
+  if push_err="$(git -C "$d" push -q origin "HEAD:$ref" 2>&1)"; then
     echo "  pushed -> origin/$ref"
   else
-    echo "  ! push failed (auth? network? diverged?)"; rc=1
+    echo "  ! push failed:"
+    printf '      %s\n' "$push_err"
+    rc=1
   fi
 done
 

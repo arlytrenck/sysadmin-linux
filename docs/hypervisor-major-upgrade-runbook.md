@@ -1,7 +1,7 @@
 # Single-node hypervisor: major-version upgrade
 
 Generic procedure for a one-box virtualization host (Proxmox VE, XCP-ng, plain
-KVM, ESXi standalone) doing a **major** OS/platform upgrade — the kind that is a
+KVM, ESXi standalone) doing a **major** OS/platform upgrade. The kind that is a
 full distro `dist-upgrade` underneath. No cluster, no live-migration safety net,
 so this is a scheduled maintenance window, not a live click.
 
@@ -13,10 +13,10 @@ so this is a scheduled maintenance window, not a live click.
 - [ ] **Host config captured**: network config, storage config, per-VM config,
       package selection, bootloader, `/etc` subset → a repo or a tarball off the
       box ([../scripts/system-snapshot.sh](../scripts/system-snapshot.sh)).
-- [ ] **Out-of-band console** works — IPMI/iDRAC/iLO/BMC or a physical KVM. If
+- [ ] **Out-of-band console** works: IPMI/iDRAC/iLO/BMC or a physical KVM. If
       the network stack breaks on reboot, the web UI is gone and you need this.
 - [ ] **Free RAM / resources.** Cap host-side caches (e.g. ZFS ARC) or, better,
-      **shut the guests down** for the window — the host is offline to users
+      **shut the guests down** for the window. The host is offline to users
       anyway, and it removes memory pressure and I/O contention from the upgrade.
 - [ ] **Storage headroom** on the root/boot filesystem (the upgrade writes a lot).
 - [ ] Read the vendor's official upgrade guide once, end to end.
@@ -52,8 +52,8 @@ files you have not touched. If it stops: resolve, `apt -f install`,
 
 - [ ] version and kernel are the new major
 - [ ] storage layer healthy, **no** errors (`zpool status` / equivalent); do
-      **not** run irreversible one-way storage upgrades (`zpool upgrade`) yet —
-      that burns your rollback path
+      **not** run irreversible one-way storage upgrades (`zpool upgrade`) yet.
+      That burns your rollback path
 - [ ] all storages active, `systemctl --failed` empty
 - [ ] network: bridge up with the right IP; fix and reload if an iface renamed
 - [ ] each guest boots → services healthy → spot-check a real user workflow
@@ -62,8 +62,8 @@ files you have not touched. If it stops: resolve, `apt -f install`,
 ## 5. Rollback
 
 - Guests are safe regardless: restore the image backup to a fresh/temp ID.
-- Host: boot the retained previous-major kernel from the boot menu (keep 2–3).
-  If userspace is already upgraded this only half-works — which is why the
+- Host: boot the retained previous-major kernel from the boot menu (keep 2-3).
+  If userspace is already upgraded this only half-works, which is why the
   off-box backup + OOB console + not doing one-way storage upgrades all matter.
   Worst case: reinstall the new major clean, re-import storage, restore guests,
   copy the captured config back.

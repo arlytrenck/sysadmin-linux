@@ -1,7 +1,7 @@
 # Single-Node Homelab Reliability
 
-Running "everything on one box" is fine — most homelabs are one host with a
-stack of containers — as long as you treat that box's failure modes
+Running "everything on one box" is fine. Most homelabs are one host with a
+stack of containers: as long as you treat that box's failure modes
 deliberately. This is the checklist for making one node boring.
 
 ## Restart & self-heal
@@ -22,7 +22,7 @@ deliberately. This is the checklist for making one node boring.
 
 ## Resource limits (so one service can't take the host down)
 
-With many containers, committed limits usually exceed RAM — that's expected,
+With many containers, committed limits usually exceed RAM. That's expected,
 most never peak together. But **every** service needs a ceiling so a leak is
 OOM-killed instead of the host:
 
@@ -34,18 +34,18 @@ deploy:
     # pids and cpus too, for anything that can fork-bomb or spin
 ```
 
-Set `vm.overcommit_memory = 1` to go with it — see
+Set `vm.overcommit_memory = 1` to go with it. See
 [container-host-tuning.md](container-host-tuning.md). Give critical services a
 better `oom_score_adj` (e.g. `-500`) so the DB isn't the first to die.
 
 ## Storage
 
 - **Bind mounts over named volumes** for anything you want to back up or
-  inspect — you can see it on the host and rsync it.
+  inspect. You can see it on the host and rsync it.
 - Keep app data on a **separate filesystem/dataset** from the OS so a full
   disk doesn't wedge the whole box. Alert on fill *rate*, not just percent.
 - Audit what's mounted where with
-  [bind-mount-audit.sh](../scripts/bind-mount-audit.sh) — no writable
+  [bind-mount-audit.sh](../scripts/bind-mount-audit.sh), no writable
   `/`, `/etc`, `$HOME`, or `docker.sock` unless a container's whole job is
   managing the host.
 
@@ -62,7 +62,7 @@ better `oom_score_adj` (e.g. `-500`) so the DB isn't the first to die.
 - **3** copies, **2** media, **1** off-site.
 - Local rotated copy: [backup-rotate.sh](../scripts/backup-rotate.sh).
 - Databases: [stack-db-dump.sh](../scripts/stack-db-dump.sh) (never rsync a
-  live DB file — dump it).
+  live DB file: dump it).
 - Off-host encrypted: [age-backup.sh](../scripts/age-backup.sh) to another
   machine, a NAS, or object storage. The private key lives **only** offline.
 - **Test a restore.** An untested backup is a hope. See
@@ -70,7 +70,7 @@ better `oom_score_adj` (e.g. `-500`) so the DB isn't the first to die.
 
 ## Config in git
 
-Compose files, `/etc` snapshots, reverse-proxy config, dashboards, cron —
+Compose files, `/etc` snapshots, reverse-proxy config, dashboards, cron:
 commit all of it and push off-host nightly with
 [nightly-git-mirror.sh](../scripts/nightly-git-mirror.sh). Keep secrets out
 ([config-as-code-repo-hygiene.md](config-as-code-repo-hygiene.md)). When the

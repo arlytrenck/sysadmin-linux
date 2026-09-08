@@ -77,8 +77,8 @@ Also set daemon-wide in `/etc/docker/daemon.json`:
 ## Init / PID 1
 
 Add `init: true` for apps that fork and don't reap children. Do **not** add it
-to images that already ship their own init (s6-overlay, tini, supervisor) —
-you'll get `pid 1` conflicts and crash loops.
+to images that already ship their own init (s6-overlay, tini, supervisor).
+You'll get `pid 1` conflicts and crash loops.
 
 ## Operational one-liners
 

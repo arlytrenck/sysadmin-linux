@@ -103,7 +103,7 @@ systemd-analyze critical-chain       # the critical path that determined boot ti
 
 ## Editing units the right way
 
-Never edit files in `/lib/systemd/system` or `/usr/lib/systemd/system` — they
+Never edit files in `/lib/systemd/system` or `/usr/lib/systemd/system`. They
 get overwritten on package upgrade. Use a drop-in:
 
 ```bash
@@ -124,7 +124,7 @@ ExecStart=/usr/bin/foo --new-flags
 
 ## Resource control (cgroups v2)
 
-Put limits in a drop-in or the unit — this caps the *service*, so a leak
+Put limits in a drop-in or the unit. This caps the *service*, so a leak
 OOM-kills the unit instead of the host:
 
 ```ini

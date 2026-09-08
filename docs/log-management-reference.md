@@ -17,7 +17,7 @@ observability stack. Pairs with
   `imjournal` on distros that run both.
 - **Application-specific logs**: most services that aren't pure systemd
   units still write their own files (`/var/log/nginx/`,
-  `/var/log/mysql/`, application log directories) — these need their own
+  `/var/log/mysql/`, application log directories). These need their own
   rotation config, since `logrotate`'s defaults only cover what's listed
   in `/etc/logrotate.d/`.
 
@@ -40,7 +40,7 @@ sudo systemctl restart systemd-journald
 ```
 
 Set permanent limits in `/etc/systemd/journald.conf` (`SystemMaxUse=`,
-`SystemMaxFileSize=`) rather than relying on periodic manual vacuuming —
+`SystemMaxFileSize=`) rather than relying on periodic manual vacuuming:
 an unbounded journal on a busy host can fill `/var` unnoticed.
 
 ## logrotate for flat files
@@ -61,27 +61,27 @@ already. When adding your own application's logs:
 ```
 
 `copytruncate` is the safer default for an application that doesn't
-reopen its log file on `SIGHUP` — it avoids needing to signal the
+reopen its log file on `SIGHUP`. It avoids needing to signal the
 process, at the small cost of a possible few lost log lines at the
 rotation instant.
 
 ## Retention: how long is long enough?
 
 - **Security/audit-relevant logs** (auth, sudo usage): keep long enough
-  to cover your incident-detection window — 90+ days is a common
+  to cover your incident-detection window: 90+ days is a common
   baseline, longer if a compliance regime requires it.
 - **Debug/application-noise logs**: 7-14 days is often plenty; they're
   usually only useful for troubleshooting something that just happened.
 - **Anything feeding capacity planning or trend analysis** (see
   [capacity-planning-guide.md](capacity-planning-guide.md)): keep
-  aggregated/summarized data much longer than raw logs — a monthly
+  aggregated/summarized data much longer than raw logs. A monthly
   count is cheap to keep for years, the raw lines behind it aren't.
 
 ## Getting signal out of logs without a full stack
 
 - **Start with rate, not content.** "Errors per minute is 5x normal" is
-  a useful alert with far less setup than parsing every error string —
-  this is the approach `log-anomaly-scan.sh` takes.
+  a useful alert with far less setup than parsing every error string.
+  This is the approach `log-anomaly-scan.sh` takes.
 - **journalctl filters are often enough** for ad hoc investigation
   before reaching for a bigger tool: `journalctl -u myservice -p err`,
   `journalctl --since "1 hour ago" -p warning`, `journalctl -k` for
@@ -91,7 +91,7 @@ rotation instant.
   of hosts, shipping logs somewhere queryable (see
   [monitoring-alerting-guide.md](monitoring-alerting-guide.md)) starts
   paying for itself in incident response time.
-- **Correlate by timestamp across sources during an incident** — the
+- **Correlate by timestamp across sources during an incident**: the
   application log, `journalctl`, and `dmesg`/kernel log often each hold
   one piece of the story; check all three around the same timestamp
   rather than assuming one has the full picture.

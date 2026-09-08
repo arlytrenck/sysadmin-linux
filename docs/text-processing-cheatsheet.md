@@ -3,7 +3,7 @@
 `grep`/`sed`/`awk`/`jq` cover the vast majority of "find this in a log" and
 "reshape this output" tasks without reaching for a scripting language.
 Reach for `awk` once a pipeline needs more than one field; reach for `jq`
-the moment the input is JSON — parsing JSON with `grep`/`sed` is a trap.
+the moment the input is JSON: parsing JSON with `grep`/`sed` is a trap.
 
 ## grep
 
@@ -32,7 +32,7 @@ sed '/^#/d' file                 # delete comment lines
 sed -n '/START/,/END/p' file     # print between two markers, inclusive
 ```
 `sed -i` on a symlink rewrites the target file's content in place, but on
-some filesystems it swaps in a new inode — don't rely on it preserving a
+some filesystems it swaps in a new inode. Don't rely on it preserving a
 bind mount or hardlink identity.
 
 ## awk
@@ -47,7 +47,7 @@ awk '{print NR": "$0}' file                      # prefix each line with its lin
 awk 'BEGIN{OFS=","} {print $1,$2}' file          # change the output separator
 ```
 awk field splitting on whitespace treats runs of spaces/tabs as one
-separator — good for `df`/`ps` output, wrong for anything that pads fields
+separator: good for `df`/`ps` output, wrong for anything that pads fields
 with fixed-width spaces.
 
 ## jq (JSON)
@@ -75,7 +75,7 @@ sort file | uniq -c | sort -rn     # classic "top N occurrences" pipeline
 cut -d: -f1,3 /etc/passwd          # fields 1 and 3, colon-delimited
 column -t -s: /etc/passwd          # align delimited columns for reading
 ```
-`uniq` only collapses *adjacent* duplicates — always `sort` first unless the
+`uniq` only collapses *adjacent* duplicates, always `sort` first unless the
 input is already grouped.
 
 ## Quick combinations worth remembering
@@ -97,10 +97,10 @@ grep -rl "old-hostname" /etc/ | xargs -r sed -i 's/old-hostname/new-hostname/g'
 ## Notes
 
 - `grep --line-buffered` matters the moment grep sits in a pipe with `tail
-  -f`/`journalctl -f` on the input side — without it, output can sit in a
+  -f`/`journalctl -f` on the input side: without it, output can sit in a
   buffer and never appear until enough of it accumulates.
 - Prefer `awk`/`jq` over chained `cut`/`sed` once a pipeline needs a
-  computed value or a conditional — chained one-liners that "sort of work"
+  computed value or a conditional: chained one-liners that "sort of work"
   on today's log format are the ones that silently break on tomorrow's.
 - `LC_ALL=C` before `sort`/`grep` on large files gives a meaningful speedup
   and byte-order sorting instead of locale-aware collation, which is

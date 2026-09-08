@@ -15,7 +15,7 @@ produce into a trend you can act on before the threshold alert fires.
 | Failed logins / lockouts | `user-activity-report.sh` | trend, not just a point-in-time count |
 | Backup size | your backup tooling's own logs | growth rate, to catch retention/compression misconfig early |
 
-You don't need a metrics platform to start — a cron job appending one
+You don't need a metrics platform to start, a cron job appending one
 line per run to a CSV is enough to see a trend:
 
 ```bash
@@ -26,7 +26,7 @@ echo "$(date +%F),$(df -h / | awk 'NR==2{print $5}' | tr -d '%')" \
 
 Once you outgrow flat files, feed the same numbers into whatever tier of
 the [monitoring-alerting-guide.md](monitoring-alerting-guide.md) stack
-you've adopted — the point here is the discipline of tracking trend, not
+you've adopted. The point here is the discipline of tracking trend, not
 the tooling.
 
 ## Reading a trend, not just a threshold
@@ -36,11 +36,11 @@ the tooling.
   better planning input than "we're at 80%, is that bad?"
 - **Step changes**: a sudden jump (a log rotation misconfig, a debug
   flag left on, a new tenant onboarded) is worth investigating even if
-  the absolute number is still comfortable — it changes the growth rate
+  the absolute number is still comfortable. It changes the growth rate
   going forward, not just today's number.
 - **Seasonal/cyclical patterns**: month-end batch jobs, backup windows,
   or business seasonality can make a snapshot look alarming when it's
-  actually routine — this is why trend beats point-in-time for alerting
+  actually routine. This is why trend beats point-in-time for alerting
   thresholds too (see the "alert on trend, not just threshold" note in
   the monitoring guide).
 
@@ -50,8 +50,8 @@ the tooling.
   minutes per host is usually enough once the data collection is
   automated.
 - **Quarterly**: project each tracked resource forward and flag anything
-  projected to breach a safe threshold within the next two quarters —
-  that's your lead time to budget, order hardware, or renegotiate a
+  projected to breach a safe threshold within the next two quarters.
+  That's your lead time to budget, order hardware, or renegotiate a
   cloud tier.
 - **Before any known future load change**: an expected growth in
   users/traffic/data retention should trigger a capacity check ahead of
@@ -66,5 +66,5 @@ the tooling.
   requirements first can create a compliance or DR gap that's more
   expensive than the disk itself.
 - Ignoring "it'll be fine, we're only at 60%" without a growth rate
-  attached — 60% today with fast growth can be a bigger emergency than
+  attached: 60% today with fast growth can be a bigger emergency than
   85% today with growth already flattened out.

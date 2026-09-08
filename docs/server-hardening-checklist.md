@@ -1,7 +1,7 @@
 # Server Hardening Checklist
 
 A working checklist for bringing a freshly-provisioned Linux server to a
-reasonable baseline security posture. Not exhaustive — adapt to your threat
+reasonable baseline security posture. Not exhaustive: adapt to your threat
 model and compliance requirements.
 
 ## Access
@@ -43,7 +43,7 @@ model and compliance requirements.
 - [ ] Confirm backups are actually running and are restorable (test restores
       periodically, not just backup job success)
 
-## Before Going Live
+## Before going live
 
 - [ ] Run a basic port scan from outside the host to confirm only intended
       ports are reachable

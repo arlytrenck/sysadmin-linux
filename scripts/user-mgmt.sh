@@ -9,6 +9,11 @@
 #   ./user-mgmt.sh unlock -u <username>
 #   ./user-mgmt.sh remove -u <username> [--purge-home]
 #
+# "lock" disables the password, expires the account, and moves authorized_keys
+# aside. All three are needed: usermod -L alone leaves SSH key login working,
+# so a locked-looking account can still be used. Running sessions are reported
+# but not killed.
+#
 # Must be run as root (or via sudo). This script only wraps standard
 # useradd/usermod/userdel calls — review before running in production.
 
@@ -22,11 +27,14 @@ require_root() {
 }
 
 usage() {
-  grep '^#' "$0" | sed -n '2,10p' | sed 's/^# \{0,1\}//'
+  grep '^#' "$0" | sed -n '2,17p' | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
 [[ $# -ge 1 ]] || usage 1
+# "-h" on its own was being taken as the subcommand, so it printed a spurious
+# "-u is required" error and exited 1 before reaching the -h case below.
+case "${1:-}" in -h|--help) usage 0 ;; esac
 CMD="$1"; shift
 
 USERNAME=""
@@ -60,14 +68,32 @@ case "$CMD" in
     echo "Created user '$USERNAME' (shell: $SHELL_PATH)"
 
     if [[ -n "$PUBKEY" ]]; then
+      # Without this, any file at all gets appended to authorized_keys: a
+      # private key, a cert, a text file. ssh-keygen -l is the cheap check
+      # that it really is a public key before it grants access.
+      if [[ ! -r "$PUBKEY" ]]; then
+        echo "Error: public key file '$PUBKEY' is not readable" >&2
+        exit 1
+      fi
+      if ! ssh-keygen -l -f "$PUBKEY" >/dev/null 2>&1; then
+        echo "Error: '$PUBKEY' is not a valid SSH public key file" >&2
+        exit 1
+      fi
+      if grep -qi 'PRIVATE KEY' "$PUBKEY"; then
+        echo "Error: '$PUBKEY' looks like a PRIVATE key. Refusing." >&2
+        exit 1
+      fi
+
       HOME_DIR="$(getent passwd "$USERNAME" | cut -d: -f6)"
       SSH_DIR="$HOME_DIR/.ssh"
       mkdir -p "$SSH_DIR"
-      cat "$PUBKEY" >> "$SSH_DIR/authorized_keys"
+      # Leading newline so the key cannot be glued onto a previous entry that
+      # was written without a trailing one.
+      printf '\n%s\n' "$(cat "$PUBKEY")" >> "$SSH_DIR/authorized_keys"
       chmod 700 "$SSH_DIR"
       chmod 600 "$SSH_DIR/authorized_keys"
       chown -R "$USERNAME:$USERNAME" "$SSH_DIR"
-      echo "Installed SSH public key for '$USERNAME'"
+      echo "Installed SSH public key for '$USERNAME' ($(ssh-keygen -l -f "$PUBKEY" | awk '{print $1" "$4}'))"
     fi
 
     if [[ "$GRANT_SUDO" -eq 1 ]]; then
@@ -78,14 +104,39 @@ case "$CMD" in
 
   lock)
     require_root
+    # usermod -L only disables the PASSWORD. A user with an authorized_keys
+    # entry still logs in over SSH exactly as before, which makes "Locked
+    # user" a dangerous thing to print during an offboarding. Expiring the
+    # account is what actually stops both paths.
     usermod -L "$USERNAME"
-    echo "Locked user '$USERNAME'"
+    usermod -e 1 "$USERNAME"
+
+    HOME_DIR="$(getent passwd "$USERNAME" | cut -d: -f6)"
+    AK="$HOME_DIR/.ssh/authorized_keys"
+    if [[ -s "$AK" ]]; then
+      KEY_COUNT="$(grep -cvE '^[[:space:]]*(#|$)' "$AK" || true)"
+      PARKED="$AK.locked-$(date +%Y%m%d-%H%M%S)"
+      mv "$AK" "$PARKED"
+      echo "Moved $KEY_COUNT key line(s) from $AK to $PARKED"
+    fi
+
+    if pgrep -u "$USERNAME" >/dev/null 2>&1; then
+      echo "Note: '$USERNAME' still has running processes; existing sessions are not killed." >&2
+    fi
+    echo "Locked user '$USERNAME' (password disabled, account expired, SSH keys moved aside)"
     ;;
 
   unlock)
     require_root
     usermod -U "$USERNAME"
-    echo "Unlocked user '$USERNAME'"
+    usermod -e '' "$USERNAME"
+    HOME_DIR="$(getent passwd "$USERNAME" | cut -d: -f6)"
+    LATEST_AK="$(find "$HOME_DIR/.ssh" -maxdepth 1 -name 'authorized_keys.locked-*' 2>/dev/null | sort | tail -1)"
+    if [[ -n "$LATEST_AK" ]]; then
+      echo "Note: SSH keys are still parked at $LATEST_AK." >&2
+      echo "      Restore them yourself once you are sure the account should have them." >&2
+    fi
+    echo "Unlocked user '$USERNAME' (password re-enabled, expiry cleared)"
     ;;
 
   remove)

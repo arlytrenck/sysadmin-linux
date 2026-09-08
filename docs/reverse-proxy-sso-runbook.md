@@ -69,11 +69,11 @@ Add security headers once (a snippet) and import into each vhost:
 
 ## Rules of thumb
 
-- Every backend app **binds to `127.0.0.1`** — the proxy is the only way in.
+- Every backend app **binds to `127.0.0.1`**. The proxy is the only way in.
 - Keep the whole proxy config in git. It changes often and you will want the
   diff when a vhost breaks.
 - The DNS/ACME token is the one real secret here: environment variable or a
   `LoadCredential`/secret file, never committed, and scoped minimally.
 - Test the auth path from *outside* the LAN CIDR (curl with a spoofed source is
-  hard; use a phone on cellular or a remote box) — it's easy to accidentally
+  hard; use a phone on cellular or a remote box). It's easy to accidentally
   leave something open because you only ever test from your desk.
