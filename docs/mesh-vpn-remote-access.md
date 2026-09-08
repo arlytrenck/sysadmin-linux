@@ -10,7 +10,7 @@ is exposed to the internet.
 | | what it is | when |
 |---|---|---|
 | **WireGuard** (raw) | a fast kernel VPN; you manage keys, IPs, and config by hand | few peers, you want zero third-party involvement |
-| **Tailscale** | WireGuard + a coordination server that does key exchange, NAT traversal, ACLs, MagicDNS | most homelabs — it just works, free tier is generous |
+| **Tailscale** | WireGuard + a coordination server that does key exchange, NAT traversal, ACLs, MagicDNS | most homelabs. It just works, free tier is generous |
 | **Headscale** | self-hosted re-implementation of Tailscale's control server | you want Tailscale's UX with no SaaS dependency |
 | **Netbird / Nebula / ZeroTier** | similar mesh models | alternatives if Tailscale's model doesn't fit |
 
@@ -50,7 +50,7 @@ sudo ethtool -K "$IFACE" rx-udp-gro-forwarding on rx-gro-list off
 ## Server nodes: stop the key from expiring
 
 By default a Tailscale node's key expires (~180 days) and it drops off the
-tailnet — fine for laptops, bad for a server. In the admin console, **disable
+tailnet: fine for laptops, bad for a server. In the admin console, **disable
 key expiry** for each server node. For raw WireGuard this isn't a thing; keys
 don't expire.
 
@@ -84,7 +84,7 @@ nothing.
 
 Either use normal `sshd` bound to the VPN interface only, or Tailscale SSH
 (`tailscale up --ssh`) which authenticates by tailnet identity and is gated by
-the `ssh` ACL above — no keys to distribute, and you can require re-auth for
+the `ssh` ACL above, no keys to distribute, and you can require re-auth for
 `root`.
 
 ## What this replaces
@@ -95,4 +95,4 @@ the `ssh` ACL above — no keys to distribute, and you can require re-auth for
 - A commercial VPN appliance for "get me into the lab" → **gone**.
 
 Public reverse-proxy vhosts still make sense for things you *want* on the open
-internet (a blog, a shared photo album) — just not the admin plane.
+internet (a blog, a shared photo album): just not the admin plane.

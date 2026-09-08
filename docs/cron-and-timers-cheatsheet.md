@@ -17,7 +17,7 @@ up) and [cron-audit.sh](../scripts/cron-audit.sh) (enumerate them all).
 | `at` / `batch` | one-shot queue | `atq`, `atrm` | n/a |
 
 Per-user crontabs are stored in `/var/spool/cron/crontabs/<user>` (Debian) or
-`/var/spool/cron/<user>` (RHEL) — **root-owned, mode 600, do not edit
+`/var/spool/cron/<user>` (RHEL): **root-owned, mode 600, do not edit
 directly**; use `crontab`.
 
 ## crontab syntax
@@ -48,18 +48,18 @@ Day-of-month and day-of-week are **OR'd** when both are restricted:
 
 ## crontab gotchas
 
-- **Minimal `PATH`** — cron runs with `PATH=/usr/bin:/bin`. Use absolute
+- **Minimal `PATH`**: cron runs with `PATH=/usr/bin:/bin`. Use absolute
   paths or set `PATH=` at the top of the crontab.
-- **Not a login shell** — none of your `~/.bashrc` / `~/.profile` env exists.
+- **Not a login shell**: none of your `~/.bashrc` / `~/.profile` env exists.
   Set what you need explicitly (`SHELL=`, `PATH=`, `MAILTO=`, app vars).
-- **`%` is special** — literal percent signs must be `\%` in a crontab command.
-- **No output = silent** — cron mails stdout/stderr to `MAILTO` (or the user);
+- **`%` is special**: literal percent signs must be `\%` in a crontab command.
+- **No output = silent**: cron mails stdout/stderr to `MAILTO` (or the user);
   if no MTA, it vanishes. Always redirect: `>> /var/log/job.log 2>&1`.
-- **The file needs a trailing newline** — some crons silently skip the last
+- **The file needs a trailing newline**: some crons silently skip the last
   line without one.
 - **`crontab <file>` replaces the entire crontab.** No merge. See recovery
   below.
-- **DST** — `cron` (Vixie) skips/repeats jobs across the spring/fall
+- **DST**: `cron` (Vixie) skips/repeats jobs across the spring/fall
   transition; systemd timers handle it correctly.
 - Editing `/etc/cron.d/*` takes effect on the next minute; no reload needed.
   A syntax error in one file can block the whole file.
@@ -70,7 +70,7 @@ Day-of-month and day-of-week are **OR'd** when both are restricted:
 content with no undo. In order of preference:
 
 **1. Config snapshot / backup.** If you snapshot `/etc` and `crontab -l`
-output (you should — see [config-snapshots.md](config-snapshots.md)):
+output (you should. See [config-snapshots.md](config-snapshots.md)):
 
 ```bash
 sudo crontab -u root -l                       # confirm what's there now
@@ -119,7 +119,7 @@ BEGIN='# >>> managed: backups >>>'; END='# <<< managed: backups <<<'
 ```
 
 - Prefer `/etc/cron.d/<name>` files for anything deployed by config
-  management — they're version-controlled files, not opaque spool state.
+  management. They're version-controlled files, not opaque spool state.
 - Alias to force safety: `alias crontab='crontab -i'` (prompts on `-r`).
 
 ## systemd timers
@@ -157,7 +157,7 @@ journalctl -u backup.service --since today
 sudo systemctl start backup.service          # run it now, on demand
 ```
 
-### Timers vs cron — why you might switch
+### Timers vs cron: why you might switch
 
 - Real logging (`journalctl -u`), exit-status tracking, `systemctl status`.
 - `Persistent=true` catches up missed runs after downtime; cron just skips.
@@ -171,7 +171,7 @@ sudo systemctl start backup.service          # run it now, on demand
 systemd-analyze calendar --iterations=5 'daily'   # cheat sheet for OnCalendar
 ```
 
-## `at` — one-shot jobs
+## `at`: one-shot jobs
 
 ```bash
 echo 'systemctl restart nginx' | at 02:00

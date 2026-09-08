@@ -46,7 +46,7 @@ cat /etc/resolv.conf          # configured resolvers (may be managed elsewhere)
 ```
 
 Propagation: a record's TTL is the maximum staleness. To check whether a change
-has landed, query each authoritative server directly —
+has landed, query each authoritative server directly:
 `dig +short NS example.com`, then `dig @ns1.example.com example.com`.
 
 ## Reachability
@@ -88,7 +88,7 @@ sudo ufw status verbose
 | /27 | 255.255.255.224 | 30 | small VLAN |
 | /28 | 255.255.255.240 | 14 | tiny pools |
 | /30 | 255.255.255.252 | 2 | point-to-point links |
-| /32 | — | 1 | single host / loopback |
+| /32 |: | 1 | single host / loopback |
 
 Network = first address, broadcast = last, usable = everything between.
 `ipcalc 10.0.0.0/26` breaks it down if installed.
@@ -109,6 +109,6 @@ sudo tcpdump -i eth0 -n port 443          # capture, filter by port
 sudo tcpdump -i eth0 -w capture.pcap      # write to a file for later analysis (e.g. Wireshark)
 ```
 
-Capture only what you need and for a bounded time — `tcpdump` on a busy
+Capture only what you need and for a bounded time: `tcpdump` on a busy
 interface generates data fast, and packet captures can contain sensitive
 payloads.
