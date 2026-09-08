@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+
+# Without this, a clone on Windows with core.autocrlf=true rewrites every
+# script's line endings and "#!/usr/bin/env bash\r" fails with "bad interpreter".
