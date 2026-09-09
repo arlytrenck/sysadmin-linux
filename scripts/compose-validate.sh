@@ -21,7 +21,7 @@
 set -uo pipefail
 
 DIR="."
-usage() { grep -E "^#( |$)" "$0" | sed "1d;s/^#\\s\\?//"; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":d:h" opt; do
   case "$opt" in

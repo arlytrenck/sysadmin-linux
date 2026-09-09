@@ -19,10 +19,7 @@ set -euo pipefail
 LOG_FILE="/var/log/update-and-patch.log"
 REBOOT_IF_NEEDED=0
 
-usage() {
-  grep '^#' "$0" | sed -n '2,13p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in

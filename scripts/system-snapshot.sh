@@ -13,10 +13,13 @@
 # under */private/, *.key, *.pem private keys, shadow, secret stores.
 set -euo pipefail
 
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
 OUT=. ; EXTRA=()
 while getopts "o:p:h" o; do case "$o" in
   o) OUT=$OPTARG ;; p) EXTRA+=("$OPTARG") ;;
-  *) sed -n '2,16p' "$0"; exit 2 ;;
+  h) usage 0 ;;
+  *) usage 2 ;;
 esac; done
 
 TS=$(date +%Y%m%d-%H%M%S)

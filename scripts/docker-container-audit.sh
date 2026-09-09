@@ -17,11 +17,7 @@
 
 set -uo pipefail
 
-usage() {
-    echo "Usage: $0 [-h]"
-    echo "  Audits running Docker containers for common misconfigurations."
-    exit 0
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]] && usage
 

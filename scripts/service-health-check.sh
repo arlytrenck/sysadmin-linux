@@ -18,10 +18,7 @@ set -euo pipefail
 UNITS=""
 DO_RESTART=0
 
-usage() {
-  grep '^#' "$0" | sed -n '2,10p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in

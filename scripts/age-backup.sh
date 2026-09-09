@@ -30,7 +30,7 @@
 set -uo pipefail
 
 NAME="" ; OUT="" ; RECIP="${AGE_RECIPIENTS_FILE:-}" ; SRC="" ; CMD="" ; KEEP=14
-usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":n:o:r:s:c:k:h" opt; do
   case "$opt" in

@@ -33,7 +33,7 @@
 set -uo pipefail
 
 MSG='mirror: %d' ; BRANCH="" ; LISTFILE="" ; ALLOW_SECRETS=0
-usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 # getopts has no long options, so pull --allow-secrets out of the argument
 # list first. Doing it this way accepts it in any position.
