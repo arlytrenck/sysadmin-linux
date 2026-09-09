@@ -51,7 +51,8 @@ sysadmin-linux/
 │   ├── swap-memory-pressure-check.sh # mem/swap thresholds, PSI stalls, recent OOM kills
 │   ├── time-sync-check.sh       # chrony/timesyncd/ntpd sync status + offset threshold
 │   ├── sudo-access-audit.sh     # every path to root: sudoers, admin groups, UID 0, NOPASSWD
-│   └── luks-encryption-audit.sh # which filesystems are encrypted at rest, plus LUKS header health
+│   ├── luks-encryption-audit.sh # which filesystems are encrypted at rest, plus LUKS header health
+│   └── endpoint-protection-status-check.sh # fail2ban/sshguard, SELinux/AppArmor, ClamAV, auditd
 └── docs/
     ├── README.md                        # index of everything below, grouped by task
     ├── assets/triage-flow.svg           # the troubleshooting flowchart as a diagram
@@ -145,6 +146,9 @@ chmod +x scripts/*.sh
   `zstd` and `age` are used by `backup-verify.sh` only if the archives need them
 - `lsblk` (util-linux) for `luks-encryption-audit.sh`; `cryptsetup` for its
   LUKS header audit, which is skipped cleanly if absent
+- `fail2ban`/`sshguard`, `selinux-utils`/`policycoreutils`, `apparmor-utils`,
+  `clamav`, and `auditd` are each optional for `endpoint-protection-status-check.sh` —
+  it reports what's absent rather than requiring any of them
 - `sudo-access-audit.sh` and `luks-encryption-audit.sh` should both be run as
   root — `/etc/sudoers.d` and LUKS headers are unreadable otherwise, and a
   partial audit is worse than none
