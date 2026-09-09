@@ -6,6 +6,12 @@ look first, in what order, before diving deep. Complements
 reference for specific symptoms; this document is about *where to
 start* when you don't yet know which category the problem is in.
 
+![Linux host triage flow: work top to bottom through SSH reachability,
+CPU load, memory pressure, disk usage, then recent changes and logs,
+with the script to run at each step.](assets/triage-flow.svg)
+
+The same flow in text, with the follow-up detail for each branch:
+
 ## Start here: what's the symptom?
 
 ```

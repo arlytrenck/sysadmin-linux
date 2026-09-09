@@ -49,8 +49,12 @@ sysadmin-linux/
 │   ├── system-snapshot.sh       # redacted tarball of an /etc subset + system inventory
 │   ├── listening-ports-audit.sh # every listening TCP/UDP socket, flag vs. an allowlist
 │   ├── swap-memory-pressure-check.sh # mem/swap thresholds, PSI stalls, recent OOM kills
-│   └── time-sync-check.sh       # chrony/timesyncd/ntpd sync status + offset threshold
+│   ├── time-sync-check.sh       # chrony/timesyncd/ntpd sync status + offset threshold
+│   ├── sudo-access-audit.sh     # every path to root: sudoers, admin groups, UID 0, NOPASSWD
+│   └── luks-encryption-audit.sh # which filesystems are encrypted at rest, plus LUKS header health
 └── docs/
+    ├── README.md                        # index of everything below, grouped by task
+    ├── assets/triage-flow.svg           # the troubleshooting flowchart as a diagram
     # cheatsheets & references
     ├── linux-cheatsheet.md              # processes, files, permissions, journald, disks
     ├── networking-cheatsheet.md         # ip/ss/dig/tcpdump/nftables + subnet quick-ref
@@ -77,6 +81,7 @@ sysadmin-linux/
     ├── new-server-bootstrap-checklist.md  # day-0 procedure for a fresh box
     ├── server-hardening-checklist.md
     ├── change-management-checklist.md
+    ├── patch-management-guide.md        # patch rings, unattended upgrades, container image stream
     # runbooks
     ├── incident-response-runbook.md
     ├── disk-full-emergency-runbook.md   # filesystem at 100% — stop the bleeding, then prevent it
@@ -138,6 +143,11 @@ chmod +x scripts/*.sh
 - `git` with working push auth for `nightly-git-mirror.sh`
 - `tar`, `gzip`, `sha256sum` for `backup-verify.sh` and `system-snapshot.sh`;
   `zstd` and `age` are used by `backup-verify.sh` only if the archives need them
+- `lsblk` (util-linux) for `luks-encryption-audit.sh`; `cryptsetup` for its
+  LUKS header audit, which is skipped cleanly if absent
+- `sudo-access-audit.sh` and `luks-encryption-audit.sh` should both be run as
+  root — `/etc/sudoers.d` and LUKS headers are unreadable otherwise, and a
+  partial audit is worse than none
 
 ## Contributing
 

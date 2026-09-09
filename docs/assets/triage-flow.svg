@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 604" width="920" height="604" role="img" aria-labelledby="title desc">
+  <title id="title">Linux host triage flow</title>
+  <desc id="desc">A top-to-bottom decision flow for triaging an unresponsive or slow Linux host. Each decision on the left, when answered yes, leads to a category of checks on the right: network, CPU, memory, disk, and finally recent changes and logs.</desc>
+
+  <style>
+    :root { color-scheme: light dark; }
+    .card   { fill: #f6f8fa; stroke: #d0d7de; }
+    .decide { fill: #ffffff; stroke: #d0d7de; }
+    .start  { fill: #ddf4ff; stroke: #54aeff; }
+    .t      { fill: #1f2328; font-weight: 600; }
+    .m      { fill: #656d76; }
+    .k      { fill: #0550ae; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+    .edge   { stroke: #8c959f; fill: none; }
+    .head   { fill: #8c959f; }
+    .lbl    { fill: #656d76; font-style: italic; }
+    .hdr    { fill: #0969da; font-weight: 700; letter-spacing: .04em; }
+
+    @media (prefers-color-scheme: dark) {
+      .card   { fill: #161b22; stroke: #30363d; }
+      .decide { fill: #0d1117; stroke: #30363d; }
+      .start  { fill: #121d2f; stroke: #1f6feb; }
+      .t      { fill: #e6edf3; }
+      .m      { fill: #8b949e; }
+      .k      { fill: #79c0ff; }
+      .edge   { stroke: #6e7681; }
+      .head   { fill: #6e7681; }
+      .lbl    { fill: #8b949e; }
+      .hdr    { fill: #4493f8; }
+    }
+  </style>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="head"/>
+    </marker>
+  </defs>
+
+  <g font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="12.5">
+
+    <!-- start -->
+    <rect x="255" y="14" width="410" height="40" rx="20" class="start"/>
+    <text x="460" y="39" text-anchor="middle" class="t" font-size="14">Host or service is unresponsive, or slow</text>
+    <path d="M 205 54 L 205 88" class="edge" marker-end="url(#a)"/>
+
+    <!-- ============ row 1: network ============ -->
+    <rect x="40" y="88" width="330" height="62" rx="8" class="decide"/>
+    <text x="60" y="114" class="t">SSH refused, or times out?</text>
+    <text x="60" y="134" class="m">Can you reach the box at all?</text>
+
+    <path d="M 370 119 L 462 119" class="edge" marker-end="url(#a)"/>
+    <text x="416" y="112" text-anchor="middle" class="lbl" font-size="11">yes</text>
+
+    <rect x="470" y="84" width="410" height="70" rx="8" class="card"/>
+    <text x="490" y="106" class="hdr" font-size="11">NETWORK</text>
+    <text x="490" y="126" class="k" font-size="11.5">ip a · ip route · ss -tlnp · dig</text>
+    <text x="490" y="144" class="k" font-size="11.5">scripts/network-diagnostics.sh</text>
+
+    <path d="M 205 150 L 205 184" class="edge" marker-end="url(#a)"/>
+    <text x="216" y="171" class="lbl" font-size="11">no</text>
+
+    <!-- ============ row 2: cpu ============ -->
+    <rect x="40" y="184" width="330" height="62" rx="8" class="decide"/>
+    <text x="60" y="210" class="t">Load average &gt;&gt; CPU count?</text>
+    <text x="60" y="230" class="m">One runaway process, or broad load?</text>
+
+    <path d="M 370 215 L 462 215" class="edge" marker-end="url(#a)"/>
+    <text x="416" y="208" text-anchor="middle" class="lbl" font-size="11">yes</text>
+
+    <rect x="470" y="180" width="410" height="70" rx="8" class="card"/>
+    <text x="490" y="202" class="hdr" font-size="11">CPU</text>
+    <text x="490" y="222" class="k" font-size="11.5">top · uptime · pidstat</text>
+    <text x="490" y="240" class="k" font-size="11.5">scripts/process-watchdog.sh</text>
+
+    <path d="M 205 246 L 205 280" class="edge" marker-end="url(#a)"/>
+    <text x="216" y="267" class="lbl" font-size="11">no</text>
+
+    <!-- ============ row 3: memory ============ -->
+    <rect x="40" y="280" width="330" height="62" rx="8" class="decide"/>
+    <text x="60" y="306" class="t">MemAvailable near zero?</text>
+    <text x="60" y="326" class="m">Swap busy, or PSI stalls climbing?</text>
+
+    <path d="M 370 311 L 462 311" class="edge" marker-end="url(#a)"/>
+    <text x="416" y="304" text-anchor="middle" class="lbl" font-size="11">yes</text>
+
+    <rect x="470" y="276" width="410" height="70" rx="8" class="card"/>
+    <text x="490" y="298" class="hdr" font-size="11">MEMORY</text>
+    <text x="490" y="318" class="k" font-size="11.5">free -h · dmesg | grep -i oom</text>
+    <text x="490" y="336" class="k" font-size="11.5">scripts/swap-memory-pressure-check.sh</text>
+
+    <path d="M 205 342 L 205 376" class="edge" marker-end="url(#a)"/>
+    <text x="216" y="363" class="lbl" font-size="11">no</text>
+
+    <!-- ============ row 4: disk ============ -->
+    <rect x="40" y="376" width="330" height="62" rx="8" class="decide"/>
+    <text x="60" y="402" class="t">Any filesystem near 100%?</text>
+    <text x="60" y="422" class="m">Check inodes too, not just blocks.</text>
+
+    <path d="M 370 407 L 462 407" class="edge" marker-end="url(#a)"/>
+    <text x="416" y="400" text-anchor="middle" class="lbl" font-size="11">yes</text>
+
+    <rect x="470" y="372" width="410" height="70" rx="8" class="card"/>
+    <text x="490" y="394" class="hdr" font-size="11">DISK</text>
+    <text x="490" y="414" class="k" font-size="11.5">df -h · df -i · du -xh --max-depth=1</text>
+    <text x="490" y="432" class="k" font-size="11.5">scripts/disk-usage-report.sh</text>
+
+    <path d="M 205 438 L 205 472" class="edge" marker-end="url(#a)"/>
+    <text x="216" y="459" class="lbl" font-size="11">no</text>
+
+    <!-- ============ row 5: changes + logs ============ -->
+    <rect x="40" y="472" width="330" height="62" rx="8" class="decide"/>
+    <text x="60" y="498" class="t">Nothing obvious above?</text>
+    <text x="60" y="518" class="m">Then ask what changed recently.</text>
+
+    <path d="M 370 503 L 462 503" class="edge" marker-end="url(#a)"/>
+
+    <rect x="470" y="462" width="410" height="88" rx="8" class="card"/>
+    <text x="490" y="484" class="hdr" font-size="11">RECENT CHANGES, THEN LOGS</text>
+    <text x="490" y="504" class="k" font-size="11.5">journalctl -p err -S -1h · last · rpm -qa --last</text>
+    <text x="490" y="522" class="k" font-size="11.5">scripts/log-anomaly-scan.sh</text>
+    <text x="490" y="540" class="k" font-size="11.5">scripts/package-inventory.sh -d baseline.txt</text>
+
+    <!-- footer -->
+    <text x="40" y="576" class="m" font-size="11.5">Work top to bottom. The first &#8220;yes&#8221; is where to start, not where to stop &#8212; a full disk and a memory leak often show up together.</text>
+    <text x="40" y="594" class="m" font-size="11.5">Full detail: docs/troubleshooting-flowchart.md and docs/troubleshooting-guide.md</text>
+  </g>
+</svg>
