@@ -5,11 +5,20 @@
 # anything looks degraded or failing, so it's safe to wire into a
 # monitoring cron job.
 #
-# Usage: ./raid-smart-health-check.sh
+# Usage: ./raid-smart-health-check.sh [-h]
 #
 # Requires: mdadm (if using Linux software RAID), smartmontools (smartctl)
 #
 set -uo pipefail
+
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
+while getopts ":h" opt; do
+  case "$opt" in
+    h) usage 0 ;;
+    \?) echo "Unknown option: -$OPTARG" >&2; usage 2 ;;
+  esac
+done
 
 worst=0
 

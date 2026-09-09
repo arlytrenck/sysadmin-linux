@@ -22,7 +22,7 @@
 set -uo pipefail
 
 THRESH=5 ; SHOW_OK=0
-usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":r:ah" opt; do
   case "$opt" in

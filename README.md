@@ -81,6 +81,7 @@ sysadmin-linux/
     ├── incident-response-runbook.md
     ├── disk-full-emergency-runbook.md   # filesystem at 100% — stop the bleeding, then prevent it
     ├── secret-rotation-runbook.md       # rotate a token/password/key with overlap + rollback
+    ├── privileged-access-and-break-glass-runbook.md  # sudo/root access, break-glass accounts, review
     ├── backup-3-2-1-runbook.md          # a backup design that actually restores
     ├── backup-dr-testing-runbook.md     # exercising those backups on a schedule
     ├── hypervisor-major-upgrade-runbook.md
@@ -98,15 +99,16 @@ sysadmin-linux/
     ├── config-snapshots.md
     ├── incident-postmortem-template.md
     ├── disaster-recovery-plan-template.md
+    ├── resource-library.md              # upstream docs for the tools referenced here
     └── glossary.md
 ```
 
 ## Usage
 
-Each script is self-contained, POSIX-ish bash, and documents its own options
-via `-h`/`--help`. Review the source before running anything against a
-production host. These are starting points, not turnkey solutions, and you
-should adapt paths, thresholds, and package managers to your environment.
+Each script is self-contained bash (4+), and documents its own options via
+`-h`. Review the source before running anything against a production host.
+These are starting points, not turnkey solutions, and you should adapt
+paths, thresholds, and package managers to your environment.
 
 ```bash
 chmod +x scripts/*.sh

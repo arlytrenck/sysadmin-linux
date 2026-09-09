@@ -19,10 +19,7 @@ SCAN_PATH="/"
 TOP_N=10
 THRESHOLD=90
 
-usage() {
-  grep '^#' "$0" | sed -n '2,12p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":p:n:t:h" opt; do
   case "$opt" in

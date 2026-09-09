@@ -27,7 +27,7 @@
 set -uo pipefail
 
 WARN=30 ; CRIT=7 ; EXTRA=()
-usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":w:c:p:h" opt; do
   case "$opt" in

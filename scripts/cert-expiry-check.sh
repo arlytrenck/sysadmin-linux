@@ -23,10 +23,7 @@ CRIT_DAYS=7
 TARGETS=()
 CERT_FILE=""
 
-usage() {
-  grep '^#' "$0" | sed -n '2,15p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":t:f:w:c:h" opt; do
   case "$opt" in

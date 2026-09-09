@@ -18,10 +18,7 @@ set -uo pipefail
 
 SCAN_PATH="/"
 
-usage() {
-  grep '^#' "$0" | sed -n '2,10p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":p:h" opt; do
   case "$opt" in

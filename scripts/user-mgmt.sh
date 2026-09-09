@@ -26,10 +26,7 @@ require_root() {
   fi
 }
 
-usage() {
-  grep '^#' "$0" | sed -n '2,17p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 [[ $# -ge 1 ]] || usage 1
 # "-h" on its own was being taken as the subcommand, so it printed a spurious

@@ -24,10 +24,7 @@ SWAP_PCT=50
 MEM_PCT=90
 PSI_PCT=10
 
-usage() {
-  grep '^#' "$0" | sed -n '2,17p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":s:m:p:h" opt; do
   case "$opt" in
