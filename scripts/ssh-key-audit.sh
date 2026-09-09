@@ -11,12 +11,14 @@
 #
 set -euo pipefail
 
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
 VERBOSE=0
 while getopts "vh" opt; do
   case "$opt" in
     v) VERBOSE=1 ;;
-    h) echo "Usage: $0 [-v]"; exit 0 ;;
-    *) echo "Usage: $0 [-v]"; exit 1 ;;
+    h) usage 0 ;;
+    *) usage 1 ;;
   esac
 done
 

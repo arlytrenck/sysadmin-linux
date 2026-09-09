@@ -18,14 +18,16 @@ Open an issue describing:
 2. Keep changes focused. One script/doc per pull request is easier to
    review than a bundle of unrelated fixes.
 3. For scripts:
-   - Match the existing style: a comment-block header with `.SYNOPSIS`/
-     usage description, options parsed with `getopts` (bash) or named
-     parameters with comment-based help (PowerShell), and a `-h`/`-Help`
-     option.
+   - Match the existing style: a `#`-comment header block (the script
+     name and a one-line purpose, then `Usage:`, `Options:`, and
+     `Exit codes:` sections), options parsed with `getopts`, and a `-h`
+     option. The `-h` handler calls the standard one-line `usage()`
+     helper, which reprints that header block:
+     `usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }`
    - Scripts should fail safely. Prefer erroring out over guessing, and
      avoid destructive actions without a clear opt-in flag.
-   - Run `shellcheck` (bash) or `PSScriptAnalyzer` (PowerShell) locally
-     before submitting: CI runs the same check.
+   - Run `shellcheck` locally before submitting: CI runs the same check
+     (`severity: warning`) plus a `bash -n` parse of every script.
 4. For docs:
    - Keep the same tone: practical, concrete commands over abstract
      advice. Prefer real command examples to prose descriptions.

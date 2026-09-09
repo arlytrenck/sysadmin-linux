@@ -22,10 +22,7 @@ window_min=15
 multiplier=3
 unit=""
 
-usage() {
-    echo "Usage: $0 [-w minutes] [-m multiplier] [-u unit]"
-    exit 0
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts "w:m:u:h" opt; do
     case "$opt" in

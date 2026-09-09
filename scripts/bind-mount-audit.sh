@@ -18,7 +18,7 @@
 set -uo pipefail
 
 SHOW_ALL=0
-usage() { grep -E '^#( |$)' "$0" | sed '1d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":ah" opt; do
   case "$opt" in

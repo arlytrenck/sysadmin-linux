@@ -26,10 +26,7 @@ RETAIN_DAYS=90
 DRY_RUN=0
 MAXDEPTH=1
 
-usage() {
-  grep '^#' "$0" | sed -n '2,12p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 need_arg() {
   [[ $# -ge 2 && -n "${2:-}" ]] || { echo "Error: $1 requires an argument" >&2; exit 1; }

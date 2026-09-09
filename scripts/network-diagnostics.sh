@@ -19,10 +19,7 @@ set -euo pipefail
 TARGETS="1.1.1.1,8.8.8.8"
 PORTS="443"
 
-usage() {
-  grep '^#' "$0" | sed -n '2,10p' | sed 's/^# \{0,1\}//'
-  exit "${1:-0}"
-}
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while getopts ":t:p:h" opt; do
   case "$opt" in

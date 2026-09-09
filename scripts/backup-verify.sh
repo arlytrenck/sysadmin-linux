@@ -12,10 +12,13 @@
 # a sibling SHA256SUMS.txt -> sha256sum -c ; otherwise just non-empty + readable.
 set -euo pipefail
 
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
 DIR="" ; MAX_AGE_H=26 ; GLOB='*'
 while getopts "d:a:g:h" o; do case "$o" in
   d) DIR=$OPTARG ;; a) MAX_AGE_H=$OPTARG ;; g) GLOB=$OPTARG ;;
-  *) sed -n '2,14p' "$0"; exit 2 ;;
+  h) usage 0 ;;
+  *) usage 2 ;;
 esac; done
 [ -d "$DIR" ] || { echo "not a directory: $DIR"; exit 2; }
 
@@ -24,8 +27,15 @@ shopt -s nullglob
 files=( "$DIR"/$GLOB )
 [ "${#files[@]}" -gt 0 ] || { echo "FAIL: no files matching '$GLOB' in $DIR"; exit 1; }
 
-newest=$(ls -1t "${files[@]}" | head -1)
-age_h=$(( ( $(date +%s) - $(stat -c %Y "$newest") ) / 3600 ))
+# Pick the newest by mtime in bash, so a newline or space in a filename can't
+# fool a parsed 'ls' into returning a partial path.
+newest="" ; newest_mtime=0
+for f in "${files[@]}"; do
+  m=$(stat -c %Y "$f" 2>/dev/null) || continue
+  (( m > newest_mtime )) && { newest_mtime=$m ; newest=$f ; }
+done
+[ -n "$newest" ] || { echo "FAIL: could not stat any file matching '$GLOB' in $DIR"; exit 1; }
+age_h=$(( ( $(date +%s) - newest_mtime ) / 3600 ))
 echo "newest: $newest  (${age_h}h old, ${#files[@]} files)"
 rc=0
 [ "$age_h" -gt "$MAX_AGE_H" ] && { echo "FAIL: newest backup is ${age_h}h old (> ${MAX_AGE_H}h)"; rc=1; }

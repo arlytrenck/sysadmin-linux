@@ -14,6 +14,8 @@
 #
 set -euo pipefail
 
+usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
+
 CPU_THRESHOLD=90
 MEM_THRESHOLD=80
 KILL=0
@@ -23,8 +25,8 @@ while getopts "c:m:kh" opt; do
     c) CPU_THRESHOLD=$OPTARG ;;
     m) MEM_THRESHOLD=$OPTARG ;;
     k) KILL=1 ;;
-    h) echo "Usage: $0 [-c cpu_pct] [-m mem_pct] [-k]"; exit 0 ;;
-    *) echo "Usage: $0 [-c cpu_pct] [-m mem_pct] [-k]"; exit 1 ;;
+    h) usage 0 ;;
+    *) usage 1 ;;
   esac
 done
 
