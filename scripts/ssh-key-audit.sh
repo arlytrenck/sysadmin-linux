@@ -6,6 +6,12 @@
 # an owner), and the same public key authorized for more than one account
 # (a shared key defeats per-user accountability). Read-only.
 #
+# Best run as root: home directories are normally 700, so without it this
+# can only see the invoking user's own authorized_keys and silently skips
+# everyone else's. It still runs unprivileged and says so, rather than
+# refusing outright — a partial audit of just your own account is still
+# useful, it just isn't the whole picture.
+#
 # Usage: ./ssh-key-audit.sh [-v]
 #   -v    verbose: also print every key found, not just flagged ones
 #
@@ -24,6 +30,13 @@ done
 
 declare -A seen_keys   # fingerprint -> "user1 user2 ..."
 flagged=0
+
+if [ "$EUID" -ne 0 ]; then
+  echo "Heads up: not running as root — home directories are normally" >&2
+  echo "700 and unreadable by anyone else, so this will silently skip" >&2
+  echo "most other users' authorized_keys. Run with sudo for full coverage." >&2
+  echo >&2
+fi
 
 echo "=== SSH authorized_keys audit ==="
 
@@ -88,7 +101,11 @@ done < /etc/passwd
 
 echo ""
 if [ "$flagged" -eq 0 ]; then
-  echo "No issues found."
+  if [ "$EUID" -ne 0 ]; then
+    echo "No issues found in the users this could read (not running as root — see heads-up above)."
+  else
+    echo "No issues found."
+  fi
 else
   echo "$flagged issue(s) flagged above."
 fi

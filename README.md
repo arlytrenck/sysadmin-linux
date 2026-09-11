@@ -153,6 +153,10 @@ chmod +x scripts/*.sh
 - `sudo-access-audit.sh` and `luks-encryption-audit.sh` should both be run as
   root — `/etc/sudoers.d` and LUKS headers are unreadable otherwise, and a
   partial audit is worse than none
+- `ssh-key-audit.sh` benefits from root too — home directories are normally
+  `700`, so it can otherwise only see your own `authorized_keys` — but it's
+  useful enough unprivileged (checking your own account) that it runs either
+  way and prints a heads-up rather than refusing outright
 
 ## Contributing
 
