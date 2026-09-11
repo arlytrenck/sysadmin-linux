@@ -10,6 +10,34 @@ Companion repos, [sysadmin-windows](https://github.com/arlytrenck/sysadmin-windo
 and [sysadmin-macos](https://github.com/arlytrenck/sysadmin-macos), cover
 the same ground for Windows Server and macOS.
 
+## Why this repo exists
+
+Most of what's here started as a one-off script written to solve a single
+problem on a single host, then got generalized once the same problem
+showed up again somewhere else. Keeping the toolkit split by platform
+instead of by task keeps that generalization cheap: this repo only needs
+Bash and GNU coreutils (plus whatever a given script calls for), checked
+with one linter (ShellCheck) in CI, rather than juggling two shells and
+two lint tools in one pull request.
+
+Day to day, the scripts get read before they get run. Every one documents
+its own options with `-h`, which is what makes it possible to pick one up
+again long after writing it without re-reading the source. The docs get
+used at least as often as the scripts: a cheatsheet for `dig`, `nftables`,
+or ZFS gets opened far more often than any single script gets run, because
+most days the actual work is a command whose shape is familiar but not
+the exact flags.
+
+The same step that makes a script reusable across a handful of hosts,
+parameterizing its paths, thresholds, and package manager, is most of the
+work needed to make it reusable against someone else's, which is why this
+is published rather than kept in a private folder. A script that only
+works with one vendor's product mostly helps the people already paying
+for that vendor, so anything like that is out of scope by design (see
+[CONTRIBUTING.md](CONTRIBUTING.md)). Every requirement a script needs is
+called out explicitly below, so you can tell before cloning whether it
+applies to your environment at all.
+
 ## Layout
 
 ```
