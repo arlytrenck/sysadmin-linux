@@ -6,8 +6,9 @@
 A collection of Linux server administration scripts, runbooks, and reference
 documentation, gathered from day-to-day homelab and small-fleet operations.
 
-A companion repo, [sysadmin-windows](https://github.com/arlytrenck/sysadmin-windows),
-covers the same ground for Windows Server environments.
+Companion repos, [sysadmin-windows](https://github.com/arlytrenck/sysadmin-windows)
+and [sysadmin-macos](https://github.com/arlytrenck/sysadmin-macos), cover
+the same ground for Windows Server and macOS.
 
 ## Layout
 
