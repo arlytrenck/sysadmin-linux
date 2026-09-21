@@ -22,7 +22,8 @@ usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit 
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -u) UNITS="$2"; shift 2 ;;
+    -u) [[ $# -ge 2 ]] || { echo "Error: -u requires a comma-separated unit list" >&2; usage 1; }
+        UNITS="$2"; shift 2 ;;
     --restart) DO_RESTART=1; shift ;;
     -h) usage 0 ;;
     *) echo "Unknown argument: $1" >&2; usage 1 ;;

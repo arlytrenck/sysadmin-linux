@@ -42,8 +42,13 @@ echo "===== $(date -Iseconds) — starting update-and-patch ====="
 
 if command -v apt-get &>/dev/null; then
   export DEBIAN_FRONTEND=noninteractive
+  # DEBIAN_FRONTEND stops debconf prompting, but dpkg asks about modified
+  # config files on its own; with no terminal (cron, a timer) that read hits
+  # EOF and the upgrade aborts half-way. Keep the existing file when it was
+  # edited (confold) and take the package's when it was not (confdef).
+  APT_OPTS=(-y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold)
   apt-get update -y
-  apt-get upgrade -y
+  apt-get upgrade "${APT_OPTS[@]}"
   apt-get autoremove -y
   REBOOT_REQUIRED=0
   [[ -f /var/run/reboot-required ]] && REBOOT_REQUIRED=1

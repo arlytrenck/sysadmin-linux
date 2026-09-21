@@ -62,7 +62,8 @@ for cid in $containers; do
     fi
 
     ports=$(docker inspect -f '{{range $p, $conf := .NetworkSettings.Ports}}{{range $conf}}{{.HostIp}}:{{.HostPort}} {{end}}{{end}}' "$cid")
-    if echo "$ports" | grep -q '0\.0\.0\.0'; then
+    # 0.0.0.0 is IPv4 "all interfaces"; ":::PORT" is the IPv6 equivalent.
+    if echo "$ports" | grep -Eq '0\.0\.0\.0|(^| ):::[0-9]'; then
         echo "  [FLAG] port(s) published on 0.0.0.0 (reachable beyond localhost): $ports"
         flagged=1
     fi

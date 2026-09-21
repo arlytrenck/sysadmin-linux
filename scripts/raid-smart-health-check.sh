@@ -7,7 +7,8 @@
 #
 # Usage: ./raid-smart-health-check.sh [-h]
 #
-# Requires: mdadm (if using Linux software RAID), smartmontools (smartctl)
+# Requires: mdadm (if using Linux software RAID), smartmontools (smartctl),
+# and root. Run unprivileged it warns and exits 1, since it could not check.
 #
 set -uo pipefail
 
@@ -21,6 +22,14 @@ while getopts ":h" opt; do
 done
 
 worst=0
+
+# mdadm --detail and smartctl both need root. Without it the array and disk
+# checks below skip themselves (or read "unknown"), so a non-root run would
+# print "OK" without having looked at anything.
+if [ "$(id -u)" -ne 0 ]; then
+  echo "WARNING: not running as root — mdadm and smartctl can't read the arrays and disks, so this run is incomplete." >&2
+  worst=1
+fi
 
 echo "=== mdadm RAID array status ==="
 if command -v mdadm >/dev/null 2>&1 && [ -r /proc/mdstat ]; then

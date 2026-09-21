@@ -69,7 +69,10 @@ echo
 echo "=== Memory pressure (PSI) ==="
 if [[ -r /proc/pressure/memory ]]; then
   cat /proc/pressure/memory
-  full_avg10="$(awk -F'avg10=| ' '/^full/ {print $2}' /proc/pressure/memory)"
+  # Pull the avg10= field by name. Splitting on 'avg10=| ' leaves an empty $2
+  # (the space and "avg10=" are two adjacent separators), so the value came
+  # back empty and this whole check was silently skipped.
+  full_avg10="$(awk '/^full/ { for (i = 1; i <= NF; i++) if ($i ~ /^avg10=/) { sub(/^avg10=/, "", $i); print $i } }' /proc/pressure/memory)"
   if [[ -n "$full_avg10" ]]; then
     full_avg10_int="${full_avg10%%.*}"
     echo "full avg10: ${full_avg10}% (threshold ${PSI_PCT}%)"

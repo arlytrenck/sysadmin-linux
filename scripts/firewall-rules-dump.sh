@@ -12,7 +12,13 @@
 #   -d   Previous dump file to diff the new snapshot against
 #   -h   Show this help
 #
-# Must be run with enough privilege to read firewall rules (usually root).
+# Must be run as root: without it every backend prints a permission error,
+# and that error used to be saved as the "ruleset" (and diffed next time).
+#
+# The dump is written to be diffable. Packet and byte counters are zeroed
+# (nft) or left out (iptables -S), because they change on every packet and
+# made every comparison against a baseline report the whole ruleset as
+# changed. A baseline taken with an older version will differ once.
 
 set -uo pipefail
 
@@ -31,6 +37,11 @@ while getopts ":o:d:h" opt; do
   esac
 done
 
+if [[ "$(id -u)" -ne 0 ]]; then
+  echo "Error: reading the firewall ruleset needs root — re-run with sudo." >&2
+  exit 1
+fi
+
 mkdir -p "$OUT_DIR"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 HOSTNAME_SHORT="$(hostname -s 2>/dev/null || hostname)"
@@ -39,19 +50,19 @@ OUT_FILE="${OUT_DIR%/}/firewall-${HOSTNAME_SHORT}-${TIMESTAMP}.txt"
 {
   if command -v nft &>/dev/null && nft list ruleset &>/dev/null; then
     echo "# Backend: nftables"
-    nft list ruleset
+    nft list ruleset | sed -E 's/\b(packets|bytes) [0-9]+/\1 0/g'
   elif command -v ufw &>/dev/null && ufw status verbose &>/dev/null 2>&1; then
     echo "# Backend: ufw"
     ufw status verbose
     echo
     echo "# Underlying iptables rules"
-    iptables -L -n -v 2>/dev/null
+    iptables -S 2>/dev/null
   elif command -v iptables &>/dev/null; then
     echo "# Backend: iptables"
-    iptables -L -n -v
+    iptables -S
     echo
     echo "# ip6tables"
-    ip6tables -L -n -v 2>/dev/null
+    ip6tables -S 2>/dev/null
   else
     echo "# No supported firewall tool found (nft, ufw, iptables)"
   fi
