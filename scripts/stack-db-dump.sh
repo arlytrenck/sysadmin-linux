@@ -76,11 +76,13 @@ for id in "${IDS[@]}"; do
       fi
       ;;
     *mariadb*|*mysql*|*percona*)
-      pw="$(val "$id" MYSQL_ROOT_PASSWORD)"; pw="${pw:-$(val "$id" MARIADB_ROOT_PASSWORD)}"
       echo "mysql     $name  -> $base.sql.gz"
       [ "$DRY" -eq 1 ] && continue
-      if docker exec -e MYSQL_PWD="$pw" "$id" \
-           sh -c 'exec mysqldump --all-databases --single-transaction --routines --events -uroot' 2>/dev/null \
+      # The root password is read from the container's own environment inside
+      # the container. Passing it as `docker exec -e MYSQL_PWD=...` put it in
+      # this host's process list for the length of the dump.
+      if docker exec "$id" \
+           sh -c 'MYSQL_PWD="${MYSQL_ROOT_PASSWORD:-${MARIADB_ROOT_PASSWORD:-}}" exec mysqldump --all-databases --single-transaction --routines --events -uroot' 2>/dev/null \
            | gzip > "$base.sql.gz" && [ -s "$base.sql.gz" ]; then
         echo "  ok"
       else
