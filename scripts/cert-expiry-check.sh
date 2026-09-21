@@ -42,6 +42,13 @@ if [[ ${#TARGETS[@]} -eq 0 && -z "$CERT_FILE" ]]; then
   usage 1
 fi
 
+# Inside (( )) a non-numeric -w or -c is read as a variable name that expands
+# to 0, so a typo silently turned every certificate into "OK".
+for pair in "WARN_DAYS:-w" "CRIT_DAYS:-c"; do
+  var="${pair%%:*}"; flag="${pair##*:}"
+  [[ "${!var}" =~ ^[0-9]+$ ]] || { echo "$flag must be a whole number of days (got '${!var}')" >&2; exit 1; }
+done
+
 WORST_STATUS=0
 NOW_EPOCH="$(date +%s)"
 
@@ -49,15 +56,26 @@ check_expiry() {
   local label="$1" end_date="$2"
   local end_epoch days_left status_label
 
-  end_epoch="$(date -d "$end_date" +%s 2>/dev/null || date -j -f '%b %d %T %Y %Z' "$end_date" +%s 2>/dev/null)"
+  # GNU date reads an empty string as "today 00:00", so an empty date has to be
+  # ruled out first or it parses as a valid moment and reports a bogus expiry.
+  end_epoch=""
+  [[ -n "$end_date" ]] && end_epoch="$(date -d "$end_date" +%s 2>/dev/null || date -j -f '%b %d %T %Y %Z' "$end_date" +%s 2>/dev/null)"
   if [[ -z "$end_epoch" ]]; then
-    echo "  [UNKNOWN] $label — could not parse expiry date: $end_date"
+    # An unreadable or unparseable certificate must not exit 0: a garbage
+    # file or an empty -f read used to print this line and still report success.
+    echo "  [UNKNOWN] $label — could not parse expiry date: ${end_date:-<empty>}"
+    (( WORST_STATUS < 1 )) && WORST_STATUS=1
     return
   fi
 
   days_left=$(( (end_epoch - NOW_EPOCH) / 86400 ))
 
-  if (( days_left < CRIT_DAYS )); then
+  # Test the epochs: integer division truncates toward zero, so a cert that
+  # lapsed a few hours ago would read as "0 days left" rather than expired.
+  if (( end_epoch <= NOW_EPOCH )); then
+    status_label="EXPIRED"
+    WORST_STATUS=2
+  elif (( days_left < CRIT_DAYS )); then
     status_label="CRITICAL"
     (( WORST_STATUS < 2 )) && WORST_STATUS=2
   elif (( days_left < WARN_DAYS )); then
@@ -67,7 +85,11 @@ check_expiry() {
     status_label="OK"
   fi
 
-  printf "  [%-8s] %-30s expires in %d day(s) (%s)\n" "$status_label" "$label" "$days_left" "$end_date"
+  if [[ "$status_label" == "EXPIRED" ]]; then
+    printf "  [%-8s] %-30s expired on %s\n" "$status_label" "$label" "$end_date"
+  else
+    printf "  [%-8s] %-30s expires in %d day(s) (%s)\n" "$status_label" "$label" "$days_left" "$end_date"
+  fi
 }
 
 if [[ -n "$CERT_FILE" ]]; then

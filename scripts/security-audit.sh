@@ -74,7 +74,11 @@ fi
 echo
 echo "=== Failed login attempts (recent) ==="
 if command -v journalctl &>/dev/null; then
-  journalctl -u sshd -p warning --since "-24 hours" --no-pager 2>/dev/null | tail -30
+  # The unit is "ssh" on Debian/Ubuntu and "sshd" on RHEL-family, so ask for
+  # both. No -p filter: sshd logs "Failed password" and "Invalid user" at
+  # info level, so "-p warning" hid nearly every failed login.
+  journalctl -u ssh -u sshd --since "-24 hours" --no-pager 2>/dev/null \
+    | grep -Ei 'failed|invalid user|authentication failure' | tail -30
 elif [[ -r /var/log/auth.log ]]; then
   grep -i "failed" /var/log/auth.log | tail -30
 else

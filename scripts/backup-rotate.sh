@@ -67,7 +67,24 @@ if [[ "$DEST_REAL" == "$SRC_REAL" || "$DEST_REAL" == "$SRC_REAL"/* ]]; then
 fi
 
 echo "Backing up '$SRC' to '$ARCHIVE'..."
-tar -czf "$ARCHIVE" -C "$(dirname "$SRC")" "$BASENAME"
+# Write to a temporary name and rename on success. A tar that dies part-way
+# (disk full, source vanished) used to leave a truncated "<name>.tar.gz" in
+# place; it then counted as a good archive, pushed a real one out of the
+# retention window, and was the newest thing a restore would reach for.
+PARTIAL="$ARCHIVE.partial"
+trap 'rm -f -- "$PARTIAL"' EXIT
+tar_rc=0
+tar -czf "$PARTIAL" -C "$(dirname "$SRC")" "$BASENAME" || tar_rc=$?
+# GNU tar exits 1 when a file changed while it was being read, which is
+# routine for a live directory; anything higher is a real failure.
+if (( tar_rc > 1 )); then
+  echo "Error: tar failed (exit $tar_rc); no archive written." >&2
+  exit 1
+fi
+if (( tar_rc == 1 )); then
+  echo "Warning: some files changed while being archived; the archive may be inconsistent." >&2
+fi
+mv -- "$PARTIAL" "$ARCHIVE"
 echo "Backup complete: $(du -h "$ARCHIVE" | cut -f1)"
 
 # Rotate: keep only the newest $KEEP archives for this basename.

@@ -7,7 +7,11 @@
 #   ./user-mgmt.sh create -u <username> [-k /path/to/pubkey] [-s /bin/bash] [--sudo]
 #   ./user-mgmt.sh lock   -u <username>
 #   ./user-mgmt.sh unlock -u <username>
-#   ./user-mgmt.sh remove -u <username> [--purge-home]
+#   ./user-mgmt.sh remove -u <username> [--purge-home] [-y]
+#
+# remove asks you to retype the username first (-y skips that, and is needed
+# when there is no terminal). lock and remove refuse UID 0 and the account
+# that ran sudo.
 #
 # "lock" disables the password, expires the account, and moves authorized_keys
 # aside. All three are needed: usermod -L alone leaves SSH key login working,
@@ -28,6 +32,21 @@ require_root() {
 
 usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
 
+# lock and remove are the two actions that can lock the admin out of their own
+# machine. Refuse root and the person who ran sudo; it is easy to type the
+# wrong name during an offboarding.
+refuse_self_or_root() {
+  local verb="$1"
+  if [[ "$(id -u "$USERNAME" 2>/dev/null || echo -1)" == "0" ]]; then
+    echo "Error: refusing to $verb '$USERNAME': it has UID 0." >&2
+    exit 1
+  fi
+  if [[ -n "${SUDO_USER:-}" && "$USERNAME" == "$SUDO_USER" ]]; then
+    echo "Error: refusing to $verb '$USERNAME': that is the account running this script." >&2
+    exit 1
+  fi
+}
+
 [[ $# -ge 1 ]] || usage 1
 # "-h" on its own was being taken as the subcommand, so it printed a spurious
 # "-u is required" error and exited 1 before reaching the -h case below.
@@ -39,6 +58,7 @@ PUBKEY=""
 SHELL_PATH="/bin/bash"
 GRANT_SUDO=0
 PURGE_HOME=0
+ASSUME_YES=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -47,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     -s) SHELL_PATH="$2"; shift 2 ;;
     --sudo) GRANT_SUDO=1; shift ;;
     --purge-home) PURGE_HOME=1; shift ;;
+    -y|--yes) ASSUME_YES=1; shift ;;
     -h) usage 0 ;;
     *) echo "Unknown argument: $1" >&2; usage 1 ;;
   esac
@@ -61,9 +82,9 @@ case "$CMD" in
       echo "Error: user '$USERNAME' already exists" >&2
       exit 1
     fi
-    useradd -m -s "$SHELL_PATH" "$USERNAME"
-    echo "Created user '$USERNAME' (shell: $SHELL_PATH)"
 
+    # Validate the key before creating the account. Checked afterwards, a bad
+    # -k left a half-made user behind: an account with no key and no password.
     if [[ -n "$PUBKEY" ]]; then
       # Without this, any file at all gets appended to authorized_keys: a
       # private key, a cert, a text file. ssh-keygen -l is the cheap check
@@ -80,7 +101,12 @@ case "$CMD" in
         echo "Error: '$PUBKEY' looks like a PRIVATE key. Refusing." >&2
         exit 1
       fi
+    fi
 
+    useradd -m -s "$SHELL_PATH" "$USERNAME"
+    echo "Created user '$USERNAME' (shell: $SHELL_PATH)"
+
+    if [[ -n "$PUBKEY" ]]; then
       HOME_DIR="$(getent passwd "$USERNAME" | cut -d: -f6)"
       SSH_DIR="$HOME_DIR/.ssh"
       mkdir -p "$SSH_DIR"
@@ -89,7 +115,9 @@ case "$CMD" in
       printf '\n%s\n' "$(cat "$PUBKEY")" >> "$SSH_DIR/authorized_keys"
       chmod 700 "$SSH_DIR"
       chmod 600 "$SSH_DIR/authorized_keys"
-      chown -R "$USERNAME:$USERNAME" "$SSH_DIR"
+      # "user:" means the user's login group, whatever it is called (it is not
+      # always the same as the username).
+      chown -R "$USERNAME:" "$SSH_DIR"
       echo "Installed SSH public key for '$USERNAME' ($(ssh-keygen -l -f "$PUBKEY" | awk '{print $1" "$4}'))"
     fi
 
@@ -101,6 +129,7 @@ case "$CMD" in
 
   lock)
     require_root
+    refuse_self_or_root "lock"
     # usermod -L only disables the PASSWORD. A user with an authorized_keys
     # entry still logs in over SSH exactly as before, which makes "Locked
     # user" a dangerous thing to print during an offboarding. Expiring the
@@ -138,6 +167,23 @@ case "$CMD" in
 
   remove)
     require_root
+    refuse_self_or_root "remove"
+    if [[ "$ASSUME_YES" -ne 1 ]]; then
+      if [[ ! -t 0 ]]; then
+        echo "Error: removal needs confirmation and there is no terminal — pass -y to proceed unattended." >&2
+        exit 1
+      fi
+      if [[ "$PURGE_HOME" -eq 1 ]]; then
+        echo "This deletes the account '$USERNAME' AND its home directory."
+      else
+        echo "This deletes the account '$USERNAME' (home directory kept)."
+      fi
+      read -r -p "Type the username to confirm: " confirm
+      if [[ "$confirm" != "$USERNAME" ]]; then
+        echo "Not confirmed; nothing removed."
+        exit 1
+      fi
+    fi
     if [[ "$PURGE_HOME" -eq 1 ]]; then
       userdel -r "$USERNAME"
       echo "Removed user '$USERNAME' and home directory"
