@@ -75,7 +75,9 @@ rc=0
 
 for d in "${DIRS[@]}"; do
   echo "== $d"
-  if [ ! -d "$d/.git" ]; then echo "  ! not a git repo"; rc=1; continue; fi
+  # -e, not -d: in a linked worktree or a submodule .git is a file, and the
+  # directory test called those "not a git repo".
+  if [ ! -e "$d/.git" ]; then echo "  ! not a git repo"; rc=1; continue; fi
 
   if ! git -C "$d" remote get-url origin >/dev/null 2>&1; then
     echo "  ! no 'origin' remote"; rc=1; continue

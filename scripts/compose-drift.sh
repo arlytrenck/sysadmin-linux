@@ -47,12 +47,21 @@ declare -A SEEN_CONTAINERS=()
 
 for f in "${FILES[@]}"; do
   d="$(dirname "$f")"
-  proj="$(basename "$d")"
-  echo "=== $f  (project: $proj)"
+  # Compose names the project after the directory only after lowercasing it and
+  # dropping characters outside [a-z0-9_-], so "Home.Assistant" is the project
+  # "homeassistant". Matching containers on the raw directory name found none
+  # for any such stack and reported every service DOWN.
+  proj="$(basename "$(cd "$d" && pwd)" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9_-')"
 
   cfg="$(cd "$d" && docker compose -f "$(basename "$f")" config --format json 2>/dev/null)" || {
+    echo "=== $f  (project: $proj)"
     echo "  ! could not parse — run compose-validate.sh"; drift=1; continue
   }
+  # An explicit top-level `name:` (or COMPOSE_PROJECT_NAME) wins, and config
+  # reports the resolved value.
+  cfg_proj="$(printf '%s' "$cfg" | jq -r '.name // empty' 2>/dev/null)"
+  [ -n "$cfg_proj" ] && proj="$cfg_proj"
+  echo "=== $f  (project: $proj)"
 
   while IFS=$'\t' read -r svc want_image want_restart; do
     [ -n "$svc" ] || continue
@@ -70,6 +79,10 @@ for f in "${FILES[@]}"; do
     state="$(docker inspect --format '{{.State.Status}}' "$cid")"
     got_image="$(docker inspect --format '{{.Config.Image}}' "$cid")"
     got_restart="$(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$cid")"
+
+    # "on-failure:3" in the file is policy name "on-failure" plus a separate
+    # retry count in the container, so compare the name part only.
+    want_restart="${want_restart%%:*}"
 
     issues=()
     [ "$state" = "running" ] || issues+=("state=$state")
