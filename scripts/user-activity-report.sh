@@ -45,7 +45,14 @@ fi
 echo
 echo "=== Idle interactive-shell accounts (never logged in, per lastlog) ==="
 if command -v lastlog &>/dev/null; then
-  lastlog | awk 'NR==1 || /\*\*Never logged in\*\*/'
+  # Only accounts that can actually log in: lastlog lists every daemon and
+  # service account too, and they all read "Never logged in", which buried
+  # the handful of real users under a few dozen system entries.
+  lastlog -u 0 | head -n 1
+  while IFS=: read -r acct _ _ _ _ _ acct_shell; do
+    case "$acct_shell" in */nologin|*/false) continue ;; esac
+    lastlog -u "$acct" 2>/dev/null | awk 'NR > 1 && /\*\*Never logged in\*\*/'
+  done < /etc/passwd
 else
   echo "  (lastlog not available)"
 fi

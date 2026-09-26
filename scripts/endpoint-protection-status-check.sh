@@ -47,7 +47,11 @@ echo "=== Brute-force protection (fail2ban / sshguard) ==="
 if command -v fail2ban-client >/dev/null 2>&1 && is_active fail2ban; then
   jails="$(fail2ban-client status 2>/dev/null | awk -F':[[:space:]]*' '/Jail list/ {print $2}')"
   jails="${jails## }"
-  if [[ -z "$jails" ]]; then
+  # fail2ban-client needs root to talk to the daemon. Run without it, the query
+  # fails and "no jails" was reported as a finding on a healthy host.
+  if ! fail2ban-client status >/dev/null 2>&1; then
+    echo "  fail2ban is active, but 'fail2ban-client status' can't be read (needs root); jail check skipped"
+  elif [[ -z "$jails" ]]; then
     echo "  fail2ban active, no jails configured"
     echo "FLAG: fail2ban is running but has no jails — nothing is actually being banned"
     flagged=$((flagged+1))
@@ -89,12 +93,17 @@ if command -v getenforce >/dev/null 2>&1; then
   esac
 elif command -v aa-status >/dev/null 2>&1; then
   aa_out="$(aa-status 2>/dev/null)"
-  enforce_n="$(awk '/profiles are in enforce mode/ {print $1}' <<< "$aa_out")"
-  complain_n="$(awk '/profiles are in complain mode/ {print $1}' <<< "$aa_out")"
-  echo "  AppArmor: ${enforce_n:-0} profile(s) enforcing, ${complain_n:-0} in complain mode"
-  if [[ "${enforce_n:-0}" -eq 0 ]]; then
-    echo "FLAG: AppArmor is installed but no profiles are enforcing"
-    flagged=$((flagged+1))
+  if [[ -z "$aa_out" ]]; then
+    # aa-status prints nothing useful without root; that is not "no profiles".
+    echo "  AppArmor: aa-status gave no output (needs root); check skipped"
+  else
+    enforce_n="$(awk '/profiles are in enforce mode/ {print $1}' <<< "$aa_out")"
+    complain_n="$(awk '/profiles are in complain mode/ {print $1}' <<< "$aa_out")"
+    echo "  AppArmor: ${enforce_n:-0} profile(s) enforcing, ${complain_n:-0} in complain mode"
+    if [[ "${enforce_n:-0}" -eq 0 ]]; then
+      echo "FLAG: AppArmor is installed but no profiles are enforcing"
+      flagged=$((flagged+1))
+    fi
   fi
 else
   echo "FLAG: neither SELinux nor AppArmor found — no mandatory access control in place"
@@ -135,7 +144,11 @@ fi
 echo
 echo "=== Audit logging (auditd) ==="
 if command -v auditctl >/dev/null 2>&1; then
-  if is_active auditd; then
+  if is_active auditd && [[ "$(id -u)" -ne 0 ]]; then
+    # Unprivileged, auditctl prints "You must be root" — one line, which the
+    # rule count below would have taken for a loaded rule.
+    echo "  auditd active; rule count needs root, check skipped"
+  elif is_active auditd; then
     rule_count="$(auditctl -l 2>/dev/null | grep -vc '^No rules')"
     echo "  auditd active, $rule_count rule(s) loaded"
     if [[ "$rule_count" -eq 0 ]]; then

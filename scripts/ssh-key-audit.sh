@@ -15,6 +15,10 @@
 # Usage: ./ssh-key-audit.sh [-v]
 #   -v    verbose: also print every key found, not just flagged ones
 #
+# Exit codes:
+#   0  nothing flagged
+#   1  one or more issues flagged (weak key, permission, or shared key)
+#
 set -euo pipefail
 
 usage() { sed -n '2,/^[^#]/p' "$0" | sed '1{/^#$/d;}; $d; s/^# \{0,1\}//'; exit "${1:-0}"; }
@@ -110,4 +114,7 @@ else
   echo "$flagged issue(s) flagged above."
 fi
 
-exit 0
+# Non-zero when anything was flagged, so a cron job or CI step can alert on it.
+# (It used to exit 0 unconditionally, which made the findings invisible to
+# anything but a person reading the output.)
+[ "$flagged" -eq 0 ]
