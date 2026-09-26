@@ -63,7 +63,7 @@ else
   [ "${#FILES[@]}" -gt 0 ] || { echo "No compose files under $DIR" >&2; exit 2; }
   mapfile -t IMAGES < <(
     grep -hE '^\s*image:\s*' "${FILES[@]}" \
-      | sed -E 's/^\s*image:\s*//; s/["'\'']//g' \
+      | sed -E 's/^\s*image:\s*//; s/\s+#.*$//; s/["'\'']//g; s/\s+$//' \
       | grep -v '\${' | sort -u
   )
 fi

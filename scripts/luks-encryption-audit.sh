@@ -65,15 +65,25 @@ kv() {
   printf '%s' "${rest%%\"*}"
 }
 
+# Every device is recorded under both its NAME and its KNAME. For partitions
+# they are the same, but for device-mapper devices NAME is the mapper name
+# ("luks-1a2b...", "vg-root") while KNAME and PKNAME are kernel names ("dm-0"),
+# and a mount source resolved with readlink is a kernel name too. Keyed by NAME
+# alone, the parent walk in is_encrypted never found a dm-crypt device, and an
+# encrypted root read as PLAINTEXT.
 while IFS= read -r line; do
   name="$(kv "$line" NAME)"
-  [[ -n "$name" ]] || continue
-  DEV_TYPE["$name"]="$(kv "$line" TYPE)"
-  DEV_PARENT["$name"]="$(kv "$line" PKNAME)"
-  DEV_FSTYPE["$name"]="$(kv "$line" FSTYPE)"
+  kdev="$(kv "$line" KNAME)"
+  [[ -n "$name" || -n "$kdev" ]] || continue
   kpath="$(kv "$line" PATH)"
-  DEV_PATH["$name"]="${kpath:-/dev/$name}"
-done < <(lsblk -P -o NAME,PATH,TYPE,FSTYPE,PKNAME 2>/dev/null)
+  for key in "$name" "$kdev"; do
+    [[ -n "$key" ]] || continue
+    DEV_TYPE["$key"]="$(kv "$line" TYPE)"
+    DEV_PARENT["$key"]="$(kv "$line" PKNAME)"
+    DEV_FSTYPE["$key"]="$(kv "$line" FSTYPE)"
+    DEV_PATH["$key"]="${kpath:-/dev/${kdev:-$name}}"
+  done
+done < <(lsblk -P -o NAME,KNAME,PATH,TYPE,FSTYPE,PKNAME 2>/dev/null)
 
 # Walk the device tree upward from a leaf. If any ancestor is a dm-crypt
 # mapping, everything stacked on top of it is encrypted at rest.
@@ -108,6 +118,10 @@ while IFS=' ' read -r src mp fstype; do
     pstore|bpf|configfs|fusectl|hugetlbfs|mqueue|autofs|squashfs|overlay|\
     efivarfs|binfmt_misc|ramfs|nsfs|rpc_pipefs|fuse.*|nfs*|cifs|smb3|zfs) continue ;;
   esac
+  # findmnt appends the subvolume for btrfs: /dev/mapper/cryptroot[/@]. Left in,
+  # readlink fails on it and the device is never found, so btrfs-on-LUKS (the
+  # default layout on Fedora and openSUSE) was reported as unencrypted.
+  src="${src%%\[*}"
   [[ "$src" == /dev/* ]] || continue
 
   kname="$(basename "$(readlink -f "$src" 2>/dev/null || echo "$src")")"
@@ -149,10 +163,14 @@ if ! command -v cryptsetup >/dev/null 2>&1; then
   echo "  cryptsetup not installed — skipping header audit"
 else
   found_luks=0
+  declare -A audited=()
   for name in "${!DEV_FSTYPE[@]}"; do
     [[ "${DEV_FSTYPE[$name]}" == "crypto_LUKS" ]] || continue
-    found_luks=1
     dev="${DEV_PATH[$name]}"
+    # Each device is indexed under two names, so audit it once.
+    [[ -z "${audited[$dev]:-}" ]] || continue
+    audited["$dev"]=1
+    found_luks=1
     echo "--- $dev ---"
 
     dump="$(cryptsetup luksDump "$dev" 2>/dev/null)"
