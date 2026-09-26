@@ -69,10 +69,14 @@ if [ "$DO_API" -eq 1 ]; then
   : "${TS_API_KEY:?set TS_API_KEY (read-only API token from the admin console)}"
   mkdir -p "$OUT/tailnet"
   base="https://api.tailscale.com/api/v2/tailnet/-"
-  get() { curl -fsSL -u "${TS_API_KEY}:" "$base/$1" 2>/dev/null; }
+  # The key goes to curl through a config on a pipe, not as `-u KEY:`: an
+  # argument is readable by every local user in /proc/<pid>/cmdline for as
+  # long as the request runs.
+  ts_curl() { curl -fsSL -K <(printf 'user = "%s:"\n' "$TS_API_KEY") "$@" 2>/dev/null; }
+  get() { ts_curl "$base/$1"; }
 
   echo "== tailnet (API) =="
-  curl -fsSL -u "${TS_API_KEY}:" -H 'Accept: application/hujson' "$base/acl" 2>/dev/null \
+  ts_curl -H 'Accept: application/hujson' "$base/acl" \
     | scrub > "$OUT/tailnet/acl.hujson"          && echo "  + tailnet/acl.hujson"
   get acl                | scrub | pretty > "$OUT/tailnet/acl.json"          && echo "  + tailnet/acl.json"
   get devices            | scrub | pretty > "$OUT/tailnet/devices.json"      && echo "  + tailnet/devices.json"

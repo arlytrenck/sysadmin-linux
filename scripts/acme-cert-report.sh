@@ -41,6 +41,13 @@ while getopts ":w:c:p:h" opt; do
 done
 command -v openssl >/dev/null 2>&1 || { echo "openssl is required." >&2; exit 2; }
 
+# A non-numeric -w or -c makes "[ days -lt abc ]" error out, which reads as
+# false, so every certificate would be reported OK.
+for pair in "WARN:-w" "CRIT:-c"; do
+  var="${pair%%:*}"; flag="${pair##*:}"
+  case "${!var}" in ''|*[!0-9]*) echo "$flag must be a whole number of days (got '${!var}')" >&2; exit 2 ;; esac
+done
+
 WORST=0
 NOW="$(date +%s)"
 
@@ -73,8 +80,15 @@ scan_dir() {  # directory of PEMs (Caddy / certbot layout)
   local d="$1"
   [ -d "$d" ] || return
   echo "== $d"
-  find "$d" -type f \( -name '*.crt' -o -name 'fullchain.pem' -o -name 'cert.pem' -o -name '*.pem' \) 2>/dev/null \
-    | grep -viE 'key|chain-only|privkey' | sort -u | while IFS= read -r f; do scan_pem "$f"; done
+  # find -L: certbot's live/<domain>/*.pem are symlinks into ../../archive, and
+  # plain "-type f" does not match a symlink, so the default certbot layout
+  # was scanned and reported nothing. Private keys are excluded by file name,
+  # not by a match anywhere in the path: the old "grep -i key" dropped any
+  # certificate under a directory or host whose name merely contains "key"
+  # (keycloak.example.com, monkey.example.com) and left it unmonitored.
+  find -L "$d" -type f \( -name '*.crt' -o -name '*.pem' \) \
+       ! -name '*.key' ! -name 'privkey*.pem' ! -name 'chain.pem' 2>/dev/null \
+    | sort -u | while IFS= read -r f; do scan_pem "$f"; done
 }
 
 scan_acme_json() {  # Traefik acme.json

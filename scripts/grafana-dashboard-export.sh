@@ -60,6 +60,15 @@ fi
 
 api() { curl -fsS --config "$CURLRC" "$URL/api/$1" 2>/dev/null; }
 
+# Fail up front on a dead URL or rejected credentials. Otherwise every fetch
+# below fails quietly, the script writes a directory of empty files, and it
+# ends with "OK (0 dashboards)" and exit 0, which a nightly job reads as a
+# good backup.
+if ! api "org" >/dev/null; then
+  echo "Cannot reach $URL/api, or the credentials were rejected (HTTP error on /api/org)." >&2
+  exit 1
+fi
+
 scrub() {
   jq '
     def mask:
