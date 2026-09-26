@@ -56,9 +56,15 @@ echo "Running kernel: $running_kernel"
 
 latest_installed=""
 if command -v dpkg-query >/dev/null 2>&1; then
-    latest_installed=$(dpkg-query -W -f='${Package} ${Version}\n' 2>/dev/null \
-        | awk '$1 ~ /^linux-image-[0-9]/ {print $1}' | sed 's/^linux-image-//' \
-        | sort -V | tail -n1)
+    # Only "ii" (installed) packages: a kernel removed without --purge stays
+    # behind as "rc" (config files only), still listed by dpkg-query -W, and a
+    # newer one of those reported "reboot required" forever. Only kernels of
+    # the running flavor are compared, so a host running -aws is not told to
+    # reboot into the -generic kernel it also has installed.
+    flavor="${running_kernel#*-*-}"   # 6.1.0-13-amd64 -> amd64; 6.1.0-13-cloud-amd64 -> cloud-amd64
+    latest_installed=$(dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' 2>/dev/null \
+        | awk -v flavor="$flavor" '$1 == "ii" && $2 ~ ("^linux-image-[0-9.]+-[0-9]+-" flavor "$") {print $2}' \
+        | sed 's/^linux-image-//' | sort -V | tail -n1)
 elif command -v rpm >/dev/null 2>&1; then
     latest_installed=$(rpm -q kernel --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' 2>/dev/null \
         | sort -V | tail -n1)

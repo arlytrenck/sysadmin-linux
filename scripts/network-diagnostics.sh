@@ -13,6 +13,10 @@
 #   -p   Comma-separated list of TCP ports to test against each host
 #        (default: 443)
 #   -h   Show this help
+#
+# Exit codes:
+#   0  every host:port test succeeded
+#   2  one or more host:port tests failed
 
 set -euo pipefail
 
@@ -69,16 +73,24 @@ echo
 echo "=== Host + port reachability ==="
 IFS=',' read -ra HOST_LIST <<< "$TARGETS"
 IFS=',' read -ra PORT_LIST <<< "$PORTS"
+PROBLEMS=0
 for host in "${HOST_LIST[@]}"; do
   for port in "${PORT_LIST[@]}"; do
-    if timeout 3 bash -c "cat < /dev/null > /dev/tcp/$host/$port" 2>/dev/null; then
+    # Host and port go in as positional arguments, not spliced into the
+    # command string, so a -t value containing shell syntax is only ever data.
+    if timeout 3 bash -c 'cat < /dev/null > "/dev/tcp/$1/$2"' _ "$host" "$port" 2>/dev/null; then
       echo "OK:      $host:$port is reachable"
     else
       echo "PROBLEM: $host:$port is not reachable"
+      PROBLEMS=$((PROBLEMS + 1))
     fi
   done
 done
 
 echo
+if (( PROBLEMS > 0 )); then
+  echo "Done. $PROBLEMS reachability check(s) failed."
+  exit 2
+fi
 echo "Done."
 

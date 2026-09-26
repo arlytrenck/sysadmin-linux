@@ -22,6 +22,11 @@ while getopts "o:p:h" o; do case "$o" in
   *) usage 2 ;;
 esac; done
 
+# The snapshot holds /etc config (netplan Wi-Fi keys, VPN configs, and whatever
+# -p adds) even after redaction, so it is written owner-only rather than with
+# the default world-readable mode.
+umask 077
+
 TS=$(date +%Y%m%d-%H%M%S)
 W=$(mktemp -d); trap 'rm -rf "$W"' EXIT
 mkdir -p "$W/etc" "$W/inventory"
@@ -34,7 +39,7 @@ for p in \
   /etc/sysctl.conf /etc/sysctl.d /etc/modules-load.d /etc/modprobe.d \
   /etc/fstab /etc/hosts /etc/hostname /etc/resolv.conf \
   /etc/systemd/system /etc/docker/daemon.json /etc/nftables.conf \
-  "${EXTRA[@]}"
+  ${EXTRA[@]+"${EXTRA[@]}"}
 do copy "$p"; done
 # systemd/system is large — keep only overrides/drop-ins and .timer/.target we added
 find "$W/root/etc/systemd/system" -maxdepth 1 -type l -delete 2>/dev/null || true
@@ -56,8 +61,16 @@ crontab -l > "$I/crontab-$(id -un).txt" 2>/dev/null || echo "(none)" > "$I/cront
 find "$W/root" -type f \( -name '*.key' -o -name 'shadow*' -o -name '*.gpg' \) -delete 2>/dev/null || true
 find "$W/root" -type f -name '*.pem' -exec sh -c \
   'grep -qi "PRIVATE KEY" "$1" && printf "<REDACTED PRIVATE KEY>\n" > "$1"' _ {} \; 2>/dev/null || true
+# Any file that contains a private key, whatever it is called: a path passed
+# with -p can easily contain id_ed25519 or a .conf with an embedded key, and
+# only *.key and *.pem were handled above.
+find "$W/root" -type f -exec sh -c \
+  'grep -qI "PRIVATE KEY" "$1" && printf "<REDACTED PRIVATE KEY FILE>\n" > "$1"' _ {} \; 2>/dev/null || true
+# Redact the whole rest of the line, not one word of it: a value with spaces
+# ("password = my secret phrase") used to keep everything after the first word.
+# The optional quote before the separator covers JSON ("password": "...").
 find "$W" -type f -exec sed -i -E \
-  's/((TOKEN|SECRET|PASSWORD|PASSWD|APIKEY|API_KEY)[[:space:]]*[=:][[:space:]]*)\S+/\1<REDACTED>/Ig' {} + 2>/dev/null || true
+  's/((TOKEN|SECRET|PASSWORD|PASSWD|APIKEY|API_KEY)["'"'"']?[[:space:]]*[=:][[:space:]]*).*/\1<REDACTED>/Ig' {} + 2>/dev/null || true
 
 ( cd "$W" && find . -type f ! -name SHA256SUMS.txt -exec sha256sum {} \; | sort -k2 > SHA256SUMS.txt )
 mkdir -p "$OUT"

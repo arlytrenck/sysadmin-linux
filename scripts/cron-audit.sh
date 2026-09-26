@@ -60,6 +60,11 @@ fi
 
 echo
 echo "=== Per-user crontabs ==="
+if [[ "$(id -u)" -ne 0 ]]; then
+  # crontab -l -u needs root for any user but yourself; without this notice a
+  # non-root run reads as "nobody else has a crontab".
+  echo "  (not root: only your own crontab is readable; run with sudo to see every user's)"
+fi
 if [[ -r /etc/passwd ]]; then
   while IFS=: read -r user _ uid _ _ _ shell; do
     # Skip obvious system/service accounts with no login shell

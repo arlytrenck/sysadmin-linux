@@ -38,7 +38,10 @@ count_journald() {
     local since="$1" until="$2"
     local args=(--no-pager -p err..emerg --since "$since" --until "$until")
     [[ -n "$unit" ]] && args+=(-u "$unit")
-    journalctl "${args[@]}" 2>/dev/null | wc -l
+    # -q drops the "-- Journal begins" / "-- No entries --" banners, and the
+    # grep drops any that remain: counting them made a window with no errors
+    # read as one, which skewed the baseline comparison.
+    journalctl -q "${args[@]}" 2>/dev/null | grep -vc '^-- '
 }
 
 count_flatfile() {

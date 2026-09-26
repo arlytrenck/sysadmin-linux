@@ -21,6 +21,9 @@ while getopts "d:a:g:h" o; do case "$o" in
   *) usage 2 ;;
 esac; done
 [ -d "$DIR" ] || { echo "not a directory: $DIR"; exit 2; }
+# A non-numeric -a made "[ age -gt abc ]" error out inside an && list, which
+# set -e ignores, so the age check quietly never failed.
+case "$MAX_AGE_H" in ''|*[!0-9]*) echo "-a must be a whole number of hours (got '$MAX_AGE_H')"; exit 2 ;; esac
 
 shopt -s nullglob
 # shellcheck disable=SC2206 # GLOB is meant to expand; nullglob makes it safe
@@ -48,8 +51,12 @@ check_one(){
   local f=$1
   [ -s "$f" ] || { echo "FAIL: empty $f"; return 1; }
   case "$f" in
-    *.gz|*.tgz) gzip -t "$f" || return 1 ;;
-    *.zst)      command -v zstd >/dev/null && { zstd -tq "$f" || return 1; } ;;
+    *.gz|*.tgz) gzip -t "$f" || { echo "FAIL: gzip -t: $f"; return 1; } ;;
+    *.zst)
+      # Without zstd this used to return 1 silently, printing only
+      # "PROBLEMS FOUND" with no hint why.
+      command -v zstd >/dev/null || { echo "FAIL: zstd is not installed, can't verify $f"; return 1; }
+      zstd -tq "$f" || { echo "FAIL: zstd -t: $f"; return 1; } ;;
     *.age)      head -c 20 "$f" | grep -q 'age-encryption' || { echo "FAIL: not an age file? $f"; return 1; } ;;
   esac
 }

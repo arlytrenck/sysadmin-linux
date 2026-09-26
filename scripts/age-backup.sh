@@ -54,6 +54,8 @@ if [ -n "$SRC" ] && [ -n "$CMD" ]; then echo "Use -s or -c, not both." >&2; exit
 if [ -z "$SRC" ] && [ -z "$CMD" ]; then echo "One of -s PATH or -c CMD is required." >&2; usage 2; fi
 [ -n "$SRC" ] && [ ! -e "$SRC" ] && { echo "Source not found: $SRC" >&2; exit 2; }
 case "$KEEP" in ''|*[!0-9]*) echo "-k must be a number." >&2; exit 2 ;; esac
+# 0 would let the prune below delete the archive that was just written.
+[ "$KEEP" -ge 1 ] || { echo "-k must be at least 1." >&2; exit 2; }
 
 mkdir -p "$OUT" || exit 2
 ts="$(date -u '+%Y%m%d-%H%M%SZ')"
@@ -99,8 +101,22 @@ fi
 
 cp -f "$out" "$latest"
 # prune old timestamped copies for this NAME
-find "$OUT" -maxdepth 1 -type f -name "$NAME-*Z.*.age" -printf '%T@ %p\n' \
-  | sort -rn | awk -v k="$KEEP" 'NR>k {print $2}' | xargs -r rm -f
+# Match the exact "<NAME>-YYYYmmdd-HHMMSSZ.<ext>.age" shape this script writes.
+# The old glob "<NAME>-*Z.*.age" also matched sibling backups whose name only
+# starts with the same prefix: backing up "app" pruned "app-data"'s archives.
+# The comparison is done in bash so metacharacters in NAME stay literal.
+old_backups=()
+while IFS= read -r -d '' f; do
+  base="${f##*/}"
+  rest="${base#"$NAME-"}"
+  [ "$rest" = "$base" ] && continue
+  [[ "$rest" =~ ^[0-9]{8}-[0-9]{6}Z\.(tar\.)?gz\.age$ ]] || continue
+  old_backups+=("$f")
+done < <(find "$OUT" -maxdepth 1 -type f -print0)
+if [ "${#old_backups[@]}" -gt "$KEEP" ]; then
+  # Names embed a UTC timestamp, so a reverse name sort is newest-first.
+  printf '%s\n' "${old_backups[@]}" | sort -r | tail -n +$((KEEP + 1)) | xargs -r -d '\n' rm -f --
+fi
 ( cd "$OUT" && sha256sum ./*.age > SHA256SUMS 2>/dev/null ) || true
 
 echo "OK  $out  ($(du -h "$out" | cut -f1), encrypted to $(( ${#RARGS[@]} / 2 )) recipient(s))"

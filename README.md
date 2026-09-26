@@ -58,7 +58,7 @@ sysadmin-linux/
 │   ├── firewall-rules-dump.sh    # snapshot nftables/ufw/iptables rules
 │   ├── ssh-key-audit.sh          # audit authorized_keys for weak/shared keys
 │   ├── raid-smart-health-check.sh # mdadm + SMART disk health check
-│   ├── process-watchdog.sh       # flag runaway CPU/mem and zombie processes
+│   ├── process-watchdog.sh       # flag runaway CPU/mem and zombie processes (-k is guarded)
 │   ├── pending-reboot-check.sh   # detect whether a reboot is waiting to apply
 │   ├── log-anomaly-scan.sh       # flag error-rate spikes vs. a trailing baseline
 │   ├── docker-container-audit.sh # flag root/privileged/unbounded/restart-looping containers
@@ -185,6 +185,13 @@ chmod +x scripts/*.sh
   `700`, so it can otherwise only see your own `authorized_keys` — but it's
   useful enough unprivileged (checking your own account) that it runs either
   way and prints a heads-up rather than refusing outright
+- `firewall-rules-dump.sh` and `raid-smart-health-check.sh` need root: the
+  firewall backends and `mdadm`/`smartctl` all refuse otherwise. The first
+  exits 1; the second warns and exits 1 rather than reporting an "OK" it
+  didn't earn
+- `process-watchdog.sh -k` skips processes younger than `-a` seconds (default
+  60) and a short list of services, because `ps` reports `%CPU` as a lifetime
+  average and a just-started process can read 100%
 
 ## Contributing
 
